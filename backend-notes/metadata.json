@@ -26,5 +26,12 @@
     "date": "2026-01-04",
     "excerpt": "Circuit Breaker is a design pattern that prevents cascading failures in distributed systems by stopping calls to a failing service after a threshold of failures. It provides fast failure responses instead of waiting for timeouts, and automatically attempts to recover after a cooldown period. The circuit has three states: CLOSED (normal operation), OPEN (failing fast), and HALF_OPEN (testing recovery).",
     "category": "backend"
+  },
+  "postgres_as_fuzzy_search.md": {
+    "title": "PostgreSQL as a Practical Alternative to Elasticsearch",
+    "slug": "postgres-as-fuzzy-search",
+    "date": "2026-01-24",
+    "excerpt": "PostgreSQL is a powerful database that can be used as a practical alternative to Elasticsearch. It provides a full-text search capability that can be used to search for text in a database. It also provides a fuzzy search capability that can be used to search for text that is similar to a given text. It also provides a JSONB indexing capability that can be used to index semi-structured data.",
+    "category": "backend"
   }
 }
