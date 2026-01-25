@@ -46,99 +46,44 @@ services:
     restart: unless-stopped
 
   # Elasticsearch Service
-  # elasticsearch:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-  #   container_name: elasticsearch
-  #   environment:
-  #     - discovery.type=single-node
-  #     - xpack.security.enabled=false
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  #   volumes:
-  #     - elasticsearch-data:/usr/share/elasticsearch/data
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD-SHELL",
-  #         "curl --silent --fail localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s || exit 1",
-  #       ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 40s
-  #   networks:
-  #     - microservices-network
-  #   restart: unless-stopped
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --silent --fail localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - microservices-network
+    restart: unless-stopped
 
   # Booking Service Database
-  # booking-db:
-  #   image: postgres:16-alpine
-  #   container_name: booking-db
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: admin
-  #     POSTGRES_DB: booking_service
-  #   ports:
-  #     - "5436:5432"
-  #   volumes:
-  #     - booking-db-data:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - microservices-network
-
-  # Booking Service
-  # booking-service:
-  #   build:
-  #     context: ./booking-service
-  #     dockerfile: Dockerfile
-  #   container_name: booking-service
-  #   ports:
-  #     - "8003:8003"
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: admin
-  #     POSTGRES_DB: booking_service
-  #     POSTGRES_HOST: booking-db
-  #     POSTGRES_PORT: 5432
-  #     AUTH_SERVICE_URL: http://auth-service:8000
-  #     REDIS_URL: redis://redis:6379
-  #     TOKEN_SECRET: dev-secret-key-change-in-production
-  #     ELASTICSEARCH_HOST: elasticsearch
-  #     ELASTICSEARCH_PORT: 9200
-  #     ELASTICSEARCH_URL: http://elasticsearch:9200
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #     booking-db:
-  #       condition: service_healthy
-  #     elasticsearch:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./booking-service:/app
-  #   # Increase shared memory for Playwright/Chromium (default 64MB is too small)
-  #   shm_size: "2gb"
-  #   networks:
-  #     - microservices-network
-  #   restart: unless-stopped
-
-  # Document Service Database
-  document-db:
+  booking-db:
     image: postgres:16-alpine
-    container_name: document-db
+    container_name: booking-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: document_service
+      POSTGRES_DB: booking_service
     ports:
-      - "5438:5432"
+      - "5436:5432"
     volumes:
-      - document-db-data:/var/lib/postgresql/data
+      - booking-db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -147,30 +92,93 @@ services:
     networks:
       - microservices-network
 
-  # Document Service
-  document-service:
+  # Booking Service
+  booking-service:
     build:
-      context: ./document-service
+      context: ./booking-service
       dockerfile: Dockerfile
-    container_name: document-service
+    container_name: booking-service
     ports:
-      - "8001:8001"
+      - "8003:8003"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: document_service
-      POSTGRES_HOST: document-db
+      POSTGRES_DB: booking_service
+      POSTGRES_HOST: booking-db
       POSTGRES_PORT: 5432
       AUTH_SERVICE_URL: http://auth-service:8000
+      REDIS_URL: redis://redis:6379
       TOKEN_SECRET: dev-secret-key-change-in-production
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     depends_on:
-      document-db:
+      redis:
         condition: service_healthy
+      booking-db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     volumes:
-      - ./document-service:/app
+      - ./booking-service:/app
+    # Increase shared memory for Playwright/Chromium (default 64MB is too small)
+    shm_size: "2gb"
     networks:
       - microservices-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8003/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Document Service Database
+  # document-db:
+  #   image: postgres:16-alpine
+  #   container_name: document-db
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: document_service
+  #   ports:
+  #     - "5438:5432"
+  #   volumes:
+  #     - document-db-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - microservices-network
+
+  # Document Service
+  # document-service:
+  #   build:
+  #     context: ./document-service
+  #     dockerfile: Dockerfile
+  #   container_name: document-service
+  #   ports:
+  #     - "8001:8001"
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: document_service
+  #     POSTGRES_HOST: document-db
+  #     POSTGRES_PORT: 5432
+  #     AUTH_SERVICE_URL: http://auth-service:8000
+  #     TOKEN_SECRET: dev-secret-key-change-in-production
+  #   depends_on:
+  #     document-db:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./document-service:/app
+  #   networks:
+  #     - microservices-network
+  #   restart: unless-stopped
 
   # Food Service Database
   # food-db:
@@ -286,8 +294,8 @@ networks:
 
 volumes:
   auth-db-data:
-  # booking-db-data:
-  document-db-data:
+  booking-db-data:
+  # document-db-data:
   redis-data:
   # food-db-data:
-  # elasticsearch-data:
+  elasticsearch-data:
