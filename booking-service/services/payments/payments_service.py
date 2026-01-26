@@ -46,15 +46,27 @@ class PaymentsService:
         return PaymentResponse.model_validate(payments)
 
     async def create_payments(self, payload: TransactionCreate):
-
-        # create validations for payments like if from and to should not be same
-        # amount should not be 0 or negative
-        # currency should be within the given list of currencies
-        # to and from account should exist (in the db) - checked via foreign key constraint
-
-        new_payload = Transaction(**payload.model_dump())
-
         try:
+            if payload.from_bank_account_id == payload.to_bank_account_id:
+                raise HTTPException(
+                    detail="Sender and reciever cannot be same",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if payload.amount == 0:
+                raise HTTPException(
+                    detail="Amount cannot be zero",
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if not self.repository.check_if_accounts_exist(payload):
+                raise HTTPException(
+                    detail="Accounts doesnt exist",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                )
+
+            new_payload = Transaction(**payload.model_dump())
+
             payments = self.repository.make_payments(new_payload)
         except IntegrityError as e:
             self.db.rollback()
