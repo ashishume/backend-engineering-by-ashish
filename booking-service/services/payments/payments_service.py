@@ -65,9 +65,22 @@ class PaymentsService:
                     status_code=status.HTTP_404_NOT_FOUND,
                 )
 
+            # Create Transaction object from payload
             new_payload = Transaction(**payload.model_dump())
 
+            # deduct amount from the sender first
+            sender_deduction = self.repository.deduct_sender_amount(new_payload)
+
+            receiver_deduction = self.repository.add_receiver_amount(new_payload)
+
+            if not sender_deduction or not receiver_deduction:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to process payment deduction/addition",
+                )
+
             payments = self.repository.make_payments(new_payload)
+
         except IntegrityError as e:
             self.db.rollback()
             # Check if it's a foreign key constraint violation

@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, UUID, DateTime, Float, String
+from sqlalchemy import Column, UUID, DateTime, Float, String, null
 import uuid
 from database import Base
 from enum import Enum
@@ -29,6 +29,9 @@ class BankAccount(Base):
         nullable=False,
         default=BankAccountStatus.ACTIVE,
     )
+
+    balance = Column(Float, nullable=True, default=0)
+
     created_at = Column(
         DateTime,
         nullable=False,

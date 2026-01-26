@@ -14,7 +14,6 @@ async def create_payments(
 ) -> TransactionResponse:
     service = PaymentsService(db)
     payments = await service.create_payments(payload)
-
     return payments
 
 
