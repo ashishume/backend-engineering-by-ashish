@@ -10,6 +10,7 @@ class TransactionCreate(BaseModel):
     amount: float
     currency: str
     status: str
+    idempotency_key: str | None = None
 
 
 class TransactionResponse(BaseModel):
@@ -20,6 +21,7 @@ class TransactionResponse(BaseModel):
     amount: float
     currency: str
     status: TransactionStatus
+    idempotency_key: str | None
     created_at: datetime.datetime
     updated_at: datetime.datetime
 

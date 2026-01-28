@@ -102,3 +102,16 @@ class PaymentsRepo:
                 detail="internal server error",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    def get_transaction_by_idempotency_key(self, idempotency_key: str):
+        """Get existing transaction by idempotency key."""
+        try:
+            transaction = self.db.execute(
+                select(Transaction).where(Transaction.idempotency_key == idempotency_key)
+            ).scalar_one_or_none()
+            return transaction
+        except Exception as e:
+            raise HTTPException(
+                detail=f"Error checking idempotency key: {str(e)}",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
