@@ -1,0 +1,251 @@
+{
+  "info": {
+    "name": "AI Chat Agent API",
+    "_postman_id": "ai-chat-agent-collection",
+    "description": "Collection for testing the AI Chat Agent API with chat and autonomous agent capabilities",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8001/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": [""]
+        },
+        "description": "Check if the API is running"
+      },
+      "response": []
+    },
+    {
+      "name": "Simple Chat",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"What is FastAPI?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["chat"]
+        },
+        "description": "Send a simple message to the AI without conversation history"
+      },
+      "response": []
+    },
+    {
+      "name": "Chat with History",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Can you explain more about that?\",\n  \"conversation_history\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"What is FastAPI?\"\n    },\n    {\n      \"role\": \"assistant\",\n      \"content\": \"FastAPI is a modern, fast (high-performance) web framework for building APIs with Python 3.7+ based on standard Python type hints.\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["chat"]
+        },
+        "description": "Send a message with conversation history for context"
+      },
+      "response": []
+    },
+    {
+      "name": "Chat with Different Model",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Tell me a fun fact about Python programming\",\n  \"model\": \"gpt-4o-mini\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["chat"]
+        },
+        "description": "Send a message using a different OpenAI model (faster/cheaper)"
+      },
+      "response": []
+    },
+    {
+      "name": "Agent - Simple Task",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"What is 25 multiplied by 4, and what time is it now?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/agent",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["agent"]
+        },
+        "description": "Run an autonomous agent that uses tools (calculate, get_current_time) to complete a task"
+      },
+      "response": []
+    },
+    {
+      "name": "Agent - Complex Calculation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"Calculate the sum of 15 and 27, then multiply the result by 3. Also tell me what time it is.\",\n  \"max_iterations\": 15\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/agent",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["agent"]
+        },
+        "description": "Run an agent with a more complex multi-step task"
+      },
+      "response": []
+    },
+    {
+      "name": "Agent - Web Search",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"Search the web for the latest news about artificial intelligence in 2026\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/agent",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["agent"]
+        },
+        "description": "Run an agent that searches the web for real-time information using DuckDuckGo or Tavily"
+      },
+      "response": []
+    },
+    {
+      "name": "Agent - Research Task",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"Search for information about FastAPI's performance and tell me the key benefits\",\n  \"max_iterations\": 15\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/agent",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["agent"]
+        },
+        "description": "Research task using web search with more iterations"
+      },
+      "response": []
+    },
+    {
+      "name": "Agent - Search + Calculate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"Search for the current world population and calculate what 1% of that would be\",\n  \"max_iterations\": 15\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/agent",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["agent"]
+        },
+        "description": "Combine web search with calculations"
+      },
+      "response": []
+    },
+    {
+      "name": "Agent - Multiple Tools",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"task\": \"Calculate 100 divided by 5, search for information about Python, and tell me the current time\",\n  \"max_iterations\": 20\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8001/agent",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8001",
+          "path": ["agent"]
+        },
+        "description": "Run an agent that needs to use multiple tools to complete the task"
+      },
+      "response": []
+    }
+  ]
+}
