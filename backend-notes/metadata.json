@@ -1,4 +1,11 @@
 {
+  "crdts_vs_ots.md": {
+    "title": "CRDTs vs OTs: Real-Time Collaboration Algorithms",
+    "slug": "crdts-vs-ots",
+    "date": "2026-02-07",
+    "excerpt": "CRDTs (Conflict-free Replicated Data Types) and OTs (Operational Transformation) are algorithms for building real-time collaborative applications. OT transforms operations based on concurrent changes (Google Docs), while CRDTs use data structures that automatically merge without conflicts (Figma). Choose OT for centralized systems, CRDTs for peer-to-peer and offline-first apps.",
+    "category": "backend"
+  },
   "event_sourcing.md": {
     "title": "Event Sourcing in Python",
     "slug": "event-sourcing",
