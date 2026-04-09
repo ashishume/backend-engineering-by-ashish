@@ -140,4 +140,5 @@ Thumbs.db
 *.sqlite
 
 
-app.log
+*.log
+

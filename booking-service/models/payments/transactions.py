@@ -1,4 +1,4 @@
-from sqlalchemy import Column, UUID, DateTime, Float, String, ForeignKey, UniqueConstraint, Index
+from sqlalchemy import Column, UUID, DateTime, Float, String, ForeignKey
 from database import Base
 import uuid
 import datetime
@@ -25,14 +25,10 @@ class Transaction(Base):
     amount = Column(Float, nullable=False)
     currency = Column(String(255), nullable=False)
     status = Column(String(255), default=TransactionStatus.PENDING, nullable=True)
-    idempotency_key = Column(String(255), nullable=True, unique=True, index=True)
+    idempotency_key = Column(String(255), nullable=True, unique=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(
         DateTime,
         default=datetime.datetime.utcnow,
         onupdate=datetime.datetime.utcnow,
-    )
-    
-    __table_args__ = (
-        Index("ix_transactions_idempotency_key", "idempotency_key"),
     )

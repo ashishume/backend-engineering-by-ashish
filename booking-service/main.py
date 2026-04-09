@@ -9,22 +9,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
 import models
 from api.v1.routes import (
-    theaters,
-    movies,
-    showings,
-    seats,
-    booking,
-    booking_seats,
-    search,
-    payments,
+    # theaters,
+    # movies,
+    # showings,
+    # seats,
+    # booking,
+    # booking_seats,
+    # search,
+    # payments,
+    practice
 )
 from core.utils import auth_guard
-from core.elasticsearch_client import (
-    get_elasticsearch_client,
-    close_elasticsearch_client,
-    create_index_if_not_exists,
-)
-from core.elasticsearch_indices import ELASTICSEARCH_INDICES, get_all_index_names
+# from core.elasticsearch_client import (
+#     get_elasticsearch_client,
+#     close_elasticsearch_client,
+#     create_index_if_not_exists,
+# )
+# from core.elasticsearch_indices import ELASTICSEARCH_INDICES, get_all_index_names
 from api.v1.routes import upcoming_ipo_scrap
 from core.redis_client import connect_redis, close_redis
 
@@ -54,23 +55,6 @@ async def lifespan(app: FastAPI):
     # Connect to Redis for caching and rate limiting
     await connect_redis()
 
-    # Initialize Elasticsearch client
-    logger.info("Initializing Elasticsearch client...")
-    try:
-        get_elasticsearch_client()
-        logger.info("Elasticsearch client initialized successfully")
-
-        # Create all Elasticsearch indices
-        logger.info("Setting up Elasticsearch indices...")
-        for index_name in get_all_index_names():
-            index_config = ELASTICSEARCH_INDICES[index_name]
-            create_index_if_not_exists(
-                index_name=index_name, mapping=index_config["mappings"]
-            )
-        logger.info("Elasticsearch indices setup complete")
-    except Exception as e:
-        logger.warning(f"Failed to initialize Elasticsearch client: {str(e)}")
-
     yield
 
     # Shutdown
@@ -79,8 +63,6 @@ async def lifespan(app: FastAPI):
     engine.dispose()
     logger.info("Closing Redis connection...")
     await close_redis()
-    logger.info("Closing Elasticsearch client...")
-    close_elasticsearch_client()
     logger.info("Application shutdown complete")
 
 
@@ -110,20 +92,21 @@ app.add_middleware(
 
 # Include routers
 routes = [
-    (theaters.router, "/booking/theaters", ["theaters"], [Depends(auth_guard)]),
-    (movies.router, "/booking/movies", ["movies"], [Depends(auth_guard)]),
-    (showings.router, "/booking/showings", ["showings"], [Depends(auth_guard)]),
-    (seats.router, "/booking/seats", ["seats"], [Depends(auth_guard)]),
-    (booking.router, "/booking/bookings", ["bookings"], [Depends(auth_guard)]),
-    (payments.router, "/booking/payments", ["payments"], []),
-    (
-        booking_seats.router,
-        "/booking/booking_seats",
-        ["booking_seats"],
-        [Depends(auth_guard)],
-    ),
-    (search.router, "/booking/search", ["search"], [Depends(auth_guard)]),
-    (upcoming_ipo_scrap.router, "/booking/scrap", ["scrap"], []),
+    # (theaters.router, "/booking/theaters", ["theaters"], [Depends(auth_guard)]),
+    # (movies.router, "/booking/movies", ["movies"], [Depends(auth_guard)]),
+    # (showings.router, "/booking/showings", ["showings"], [Depends(auth_guard)]),
+    # (seats.router, "/booking/seats", ["seats"], [Depends(auth_guard)]),
+    # (booking.router, "/booking/bookings", ["bookings"], [Depends(auth_guard)]),
+    # (payments.router, "/booking/payments", ["payments"], []),
+    # (
+    #     booking_seats.router,
+    #     "/booking/booking_seats",
+    #     ["booking_seats"],
+    #     [Depends(auth_guard)],
+    # ),
+    # (search.router, "/booking/search", ["search"], [Depends(auth_guard)]),
+    # (upcoming_ipo_scrap.router, "/booking/scrap", ["scrap"], []),
+    (practice.router, "/practice", ["practice"], []),
 ]
 
 for router, prefix, tags, dependencies in routes:
