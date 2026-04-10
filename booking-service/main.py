@@ -7,8 +7,9 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
-import models
-from api.v1.routes import (
+# import models
+import v2.models
+# from api.v1.routes import (
     # theaters,
     # movies,
     # showings,
@@ -17,8 +18,10 @@ from api.v1.routes import (
     # booking_seats,
     # search,
     # payments,
-    practice
-)
+
+# )
+
+from v2.api import documents
 from core.utils import auth_guard
 # from core.elasticsearch_client import (
 #     get_elasticsearch_client,
@@ -106,7 +109,7 @@ routes = [
     # ),
     # (search.router, "/booking/search", ["search"], [Depends(auth_guard)]),
     # (upcoming_ipo_scrap.router, "/booking/scrap", ["scrap"], []),
-    (practice.router, "/practice", ["practice"], []),
+    (documents.router,'/documents',['documents'],[])
 ]
 
 for router, prefix, tags, dependencies in routes:

@@ -135,6 +135,9 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
+# Local Chroma vector store (RAG)
+.chroma_data/
+
 # Database
 *.db
 *.sqlite

@@ -1,11 +1,18 @@
 fastapi
 uvicorn[standard]
+python-multipart
 passlib[bcrypt]==1.7.4
 bcrypt==4.1.2
 python-jose[cryptography]==3.3.0
 pydantic==2.12.3
 pydantic_core==2.41.4
 
+openai
+pypdf 
+chromadb
+python-docx
+langchain
+langchain-text-splitters
 httpx==0.28.1
 requests==2.31.0
 beautifulsoup4==4.12.3
