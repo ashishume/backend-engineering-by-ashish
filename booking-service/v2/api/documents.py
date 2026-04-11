@@ -119,6 +119,67 @@ def _normalize_query(query: str) -> str:
     return q
 
 
+def _rows_from_chroma_get(
+    raw: dict[str, Any],
+    include_embeddings: bool,
+) -> list[dict[str, Any]]:
+    ids = raw.get("ids") or []
+    docs = raw.get("documents") or []
+    metas = raw.get("metadatas") or []
+    embs = raw.get("embeddings") if include_embeddings else None
+    rows: list[dict[str, Any]] = []
+    for i, cid in enumerate(ids):
+        row: dict[str, Any] = {
+            "id": cid,
+            "text": docs[i] if i < len(docs) else None,
+            "metadata": metas[i] if i < len(metas) else None,
+        }
+        if include_embeddings and embs is not None and i < len(embs):
+            row["embedding"] = embs[i]
+        rows.append(row)
+    return rows
+
+
+@router.get("/chunks", response_model=dict[str, Any])
+def list_chunks(
+    limit: int | None = Query(
+        default=None,
+        ge=1,
+        le=50_000,
+        description="Page size; omit to return every chunk (may be large).",
+    ),
+    offset: int = Query(default=0, ge=0, description="Skip this many chunks (pagination)."),
+    include_embeddings: bool = Query(
+        default=False,
+        description="Include embedding vectors (large JSON).",
+    ),
+) -> dict[str, Any]:
+    """Return stored vector-db rows: id, text, metadata (and optionally embeddings)."""
+    total = collection.count()
+    include: list[str] = ["documents", "metadatas"]
+    if include_embeddings:
+        include.append("embeddings")
+
+    if limit is None:
+        batch_size = 500
+        rows = []
+        o = 0
+        while True:
+            raw = collection.get(include=include, limit=batch_size, offset=o)
+            part = _rows_from_chroma_get(raw, include_embeddings)
+            if not part:
+                break
+            rows.extend(part)
+            o += len(part)
+            if len(part) < batch_size:
+                break
+        return {"total": total, "count": len(rows), "chunks": rows}
+
+    raw = collection.get(include=include, limit=limit, offset=offset)
+    rows = _rows_from_chroma_get(raw, include_embeddings)
+    return {"total": total, "count": len(rows), "chunks": rows}
+
+
 @router.post("/upload", response_model=dict[str, Any])
 async def upload_document(file: UploadFile = File(...)) -> dict[str, Any]:
     content = await file.read()
