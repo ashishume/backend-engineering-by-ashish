@@ -1,5 +1,7 @@
 import io
+import math
 import os
+import re
 import uuid
 from pathlib import Path
 from typing import Any
@@ -30,15 +32,102 @@ collection = chroma_client.get_or_create_collection("documents")
 # OpenRouter expects vendor-prefixed model ids for chat.
 CHAT_MODEL = os.getenv("OPENROUTER_CHAT_MODEL", "openai/gpt-4o-mini")
 
+EMBEDDING_MODEL = "openai/text-embedding-3-small"
+# semantic: split where consecutive sentences are dissimilar in embedding space
+# recursive: fixed-size RecursiveCharacterTextSplitter (no extra embed calls on upload)
+DOCUMENT_CHUNKING_STRATEGY = os.getenv("DOCUMENT_CHUNKING_STRATEGY", "semantic").lower()
+# Below this cosine similarity between adjacent sentences, start a new chunk (tune 0.35–0.65).
+DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD = float(
+    os.getenv("DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD", "0.5")
+)
+# Cap sentence-level embedding calls; beyond this, fall back to recursive splitting.
+_DOCUMENT_SEMANTIC_MAX_SENTENCES = int(os.getenv("DOCUMENT_SEMANTIC_MAX_SENTENCES", "800"))
+_CHUNK_SIZE = int(os.getenv("DOCUMENT_CHUNK_SIZE", "1000"))
+_CHUNK_OVERLAP = int(os.getenv("DOCUMENT_CHUNK_OVERLAP", "200"))
+
 router = APIRouter()
 
 
 def get_embedding(text: str) -> list[float]:
     response = client.embeddings.create(
-        model="openai/text-embedding-3-small",
+        model=EMBEDDING_MODEL,
         input=text,
     )
     return response.data[0].embedding
+
+
+def get_embeddings_batch(texts: list[str]) -> list[list[float]]:
+    """Batch embeddings for semantic chunking (OpenAI-compatible API)."""
+    if not texts:
+        return []
+    batch_size = 64
+    out: list[list[float]] = []
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i : i + batch_size]
+        response = client.embeddings.create(model=EMBEDDING_MODEL, input=batch)
+        ordered = sorted(response.data, key=lambda d: d.index)
+        out.extend(item.embedding for item in ordered)
+    return out
+
+
+def _cosine_similarity(a: list[float], b: list[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    if na == 0.0 or nb == 0.0:
+        return 0.0
+    return dot / (na * nb)
+
+
+def _split_into_sentences(text: str) -> list[str]:
+    """Lightweight sentence split (no extra NLP deps); best for prose-style PDFs/DOCX."""
+    text = text.strip()
+    if not text:
+        return []
+    parts = re.split(r"(?<=[.!?。！？])\s+", text)
+    return [p.strip() for p in parts if p.strip()]
+
+
+def _recursive_split(text: str) -> list[str]:
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=_CHUNK_SIZE,
+        chunk_overlap=_CHUNK_OVERLAP,
+    )
+    return splitter.split_text(text)
+
+
+def semantic_split_docs(text: str) -> list[str]:
+    """Chunk by embedding similarity between adjacent sentences (topic / boundary aware)."""
+    sentences = _split_into_sentences(text)
+    if not sentences:
+        return []
+    if len(sentences) == 1:
+        return _recursive_split(sentences[0]) if len(sentences[0]) > _CHUNK_SIZE else sentences
+
+    if len(sentences) > _DOCUMENT_SEMANTIC_MAX_SENTENCES:
+        return _recursive_split(text)
+
+    embeddings = get_embeddings_batch(sentences)
+    if len(embeddings) != len(sentences):
+        return _recursive_split(text)
+
+    spans: list[tuple[int, int]] = []
+    start = 0
+    thr = DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD
+    for i in range(len(sentences) - 1):
+        if _cosine_similarity(embeddings[i], embeddings[i + 1]) < thr:
+            spans.append((start, i + 1))
+            start = i + 1
+    spans.append((start, len(sentences)))
+
+    merged = [" ".join(sentences[s:e]) for s, e in spans]
+    final: list[str] = []
+    for chunk in merged:
+        if len(chunk) > _CHUNK_SIZE:
+            final.extend(_recursive_split(chunk))
+        else:
+            final.append(chunk)
+    return final
 
 
 def store_chunks(chunks: list[str]) -> None:
@@ -70,8 +159,9 @@ def extract_text(filename: str | None, content: bytes) -> str:
 
 
 def split_docs(text: str) -> list[str]:
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    return splitter.split_text(text)
+    if DOCUMENT_CHUNKING_STRATEGY == "recursive":
+        return _recursive_split(text)
+    return semantic_split_docs(text)
 
 
 def retrieve(query: str, k: int = 3) -> list[str]:
