@@ -1,5 +1,5 @@
-import DataItem from "./data-item";
-import FilterButton from "./filter-button";
+import CommentsTableClient from "./components/comments-table-client";
+
 
 type Comment = {
   id: number;
@@ -7,30 +7,22 @@ type Comment = {
   body: string;
 };
 
-async function fetchData(searchTerm = ""): Promise<Comment[]> {
+async function fetchData(): Promise<Comment[]> {
   const response = await fetch(
-    `https://jsonplaceholder.typicode.com/comments?q=${encodeURIComponent(searchTerm)}`,
+    "https://jsonplaceholder.typicode.com/comments",
     { cache: "no-store" }
   );
-  return response.json();
+
+  const resp = response.json();
+  return resp;
 }
 
-type HomeProps = {
-  searchParams?: Promise<{
-    search?: string;
-  }>;
-};
+export default async function Home() {
+  const data = await fetchData();
 
-export default async function Home({ searchParams }: HomeProps) {
-  const resolvedSearchParams = await searchParams;
-  const searchTerm = resolvedSearchParams?.search ?? "";
-
-  const data = await fetchData(searchTerm);
   return (
     <div className="flex flex-col gap-4 p-4">
-      <FilterButton />
-
-      {data.map((item) => <DataItem key={item.id} item={item} />)}
+      <CommentsTableClient items={data} />
     </div>
   );
 }
