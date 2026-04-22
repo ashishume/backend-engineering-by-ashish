@@ -6,31 +6,31 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from database import Base, engine
+# from database import Base, engine
 # import models
-import v2.models
+# import v2.models
 # from api.v1.routes import (
-    # theaters,
-    # movies,
-    # showings,
-    # seats,
-    # booking,
-    # booking_seats,
-    # search,
-    # payments,
+#     theaters,
+#     movies,
+#     showings,
+#     seats,
+#     booking,
+#     booking_seats,
+#     search,
+#     payments,
 
 # )
 
-from v2.api import documents
-from core.utils import auth_guard
+from v2.api import search
+# from core.utils import auth_guard
 # from core.elasticsearch_client import (
 #     get_elasticsearch_client,
 #     close_elasticsearch_client,
 #     create_index_if_not_exists,
 # )
 # from core.elasticsearch_indices import ELASTICSEARCH_INDICES, get_all_index_names
-from api.v1.routes import upcoming_ipo_scrap
-from core.redis_client import connect_redis, close_redis
+# from api.v1.routes import upcoming_ipo_scrap
+# from core.redis_client import connect_redis, close_redis
 
 # Configure logging
 logging.basicConfig(
@@ -42,31 +42,31 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Lifespan context manager for startup and shutdown events.
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+    # """
+    # Lifespan context manager for startup and shutdown events.
 
-    This replaces the deprecated @app.on_event decorators.
-    """
+    # This replaces the deprecated @app.on_event decorators.
+    # """
     # Startup
-    logger.info("Starting up application...")
-    logger.info("Creating database tables...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created successfully")
+    # logger.info("Starting up application...")
+    # logger.info("Creating database tables...")
+    # Base.metadata.create_all(bind=engine)
+    # logger.info("Database tables created successfully")
 
-    # Connect to Redis for caching and rate limiting
-    await connect_redis()
+    # # Connect to Redis for caching and rate limiting
+    # await connect_redis()
 
-    yield
+    # yield
 
-    # Shutdown
-    logger.info("Shutting down application...")
-    logger.info("Closing database connections...")
-    engine.dispose()
-    logger.info("Closing Redis connection...")
-    await close_redis()
-    logger.info("Application shutdown complete")
+    # # Shutdown
+    # logger.info("Shutting down application...")
+    # logger.info("Closing database connections...")
+    # engine.dispose()
+    # logger.info("Closing Redis connection...")
+    # await close_redis()
+    # logger.info("Application shutdown complete")
 
 
 # Create FastAPI application
@@ -74,7 +74,7 @@ app = FastAPI(
     title="Booking Service",
     description="Booking Service for the booking management system",
     version="1.0.0",
-    lifespan=lifespan,
+    # lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -109,7 +109,8 @@ routes = [
     # ),
     # (search.router, "/booking/search", ["search"], [Depends(auth_guard)]),
     # (upcoming_ipo_scrap.router, "/booking/scrap", ["scrap"], []),
-    (documents.router,'/documents',['documents'],[])
+    (search.router,'/search',['search'],[])
+
 ]
 
 for router, prefix, tags, dependencies in routes:

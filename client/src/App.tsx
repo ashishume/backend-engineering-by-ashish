@@ -15,7 +15,7 @@ import Home from "./pages/Home";
 function App() {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />

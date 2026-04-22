@@ -50,6 +50,8 @@ const getMovies = async () => {
   return response.data;
 };
 
+
+
 const getMovieById = async (movie_id: string) => {
   const response = await bookingApi.get(`/movies/${movie_id}`);
   return response.data;
