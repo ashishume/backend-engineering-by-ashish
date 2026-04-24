@@ -41,7 +41,9 @@ DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD = float(
     os.getenv("DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD", "0.5")
 )
 # Cap sentence-level embedding calls; beyond this, fall back to recursive splitting.
-_DOCUMENT_SEMANTIC_MAX_SENTENCES = int(os.getenv("DOCUMENT_SEMANTIC_MAX_SENTENCES", "800"))
+_DOCUMENT_SEMANTIC_MAX_SENTENCES = int(
+    os.getenv("DOCUMENT_SEMANTIC_MAX_SENTENCES", "800")
+)
 _CHUNK_SIZE = int(os.getenv("DOCUMENT_CHUNK_SIZE", "1000"))
 _CHUNK_OVERLAP = int(os.getenv("DOCUMENT_CHUNK_OVERLAP", "200"))
 
@@ -85,6 +87,7 @@ def _split_into_sentences(text: str) -> list[str]:
     if not text:
         return []
     parts = re.split(r"(?<=[.!?。！？])\s+", text)
+    print(parts)
     return [p.strip() for p in parts if p.strip()]
 
 
@@ -102,7 +105,11 @@ def semantic_split_docs(text: str) -> list[str]:
     if not sentences:
         return []
     if len(sentences) == 1:
-        return _recursive_split(sentences[0]) if len(sentences[0]) > _CHUNK_SIZE else sentences
+        return (
+            _recursive_split(sentences[0])
+            if len(sentences[0]) > _CHUNK_SIZE
+            else sentences
+        )
 
     if len(sentences) > _DOCUMENT_SEMANTIC_MAX_SENTENCES:
         return _recursive_split(text)
@@ -225,7 +232,9 @@ def _rows_from_chroma_get(
             "metadata": metas[i] if i < len(metas) else None,
         }
         if include_embeddings and embs is not None and i < len(embs):
-            row["embedding"] = embs[i]
+            emb = embs[i]
+            # Chroma can return numpy arrays; convert to JSON-serializable list.
+            row["embedding"] = emb.tolist() if hasattr(emb, "tolist") else emb
         rows.append(row)
     return rows
 
@@ -238,7 +247,9 @@ def list_chunks(
         le=50_000,
         description="Page size; omit to return every chunk (may be large).",
     ),
-    offset: int = Query(default=0, ge=0, description="Skip this many chunks (pagination)."),
+    offset: int = Query(
+        default=0, ge=0, description="Skip this many chunks (pagination)."
+    ),
     include_embeddings: bool = Query(
         default=False,
         description="Include embedding vectors (large JSON).",
@@ -287,7 +298,9 @@ async def upload_document(file: UploadFile = File(...)) -> dict[str, Any]:
 
 @router.post("/ask")
 def ask(
-    query: str = Query(..., description="Question; answered from ingested document chunks"),
+    query: str = Query(
+        ..., description="Question; answered from ingested document chunks"
+    ),
 ) -> dict[str, Any]:
     q = _normalize_query(query)
     docs = retrieve(q)

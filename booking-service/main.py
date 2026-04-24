@@ -21,7 +21,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # )
 
-from v2.api import search
+from v2.api import search, documents
+
 # from core.utils import auth_guard
 # from core.elasticsearch_client import (
 #     get_elasticsearch_client,
@@ -44,29 +45,29 @@ logger = logging.getLogger(__name__)
 
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):
-    # """
-    # Lifespan context manager for startup and shutdown events.
+# """
+# Lifespan context manager for startup and shutdown events.
 
-    # This replaces the deprecated @app.on_event decorators.
-    # """
-    # Startup
-    # logger.info("Starting up application...")
-    # logger.info("Creating database tables...")
-    # Base.metadata.create_all(bind=engine)
-    # logger.info("Database tables created successfully")
+# This replaces the deprecated @app.on_event decorators.
+# """
+# Startup
+# logger.info("Starting up application...")
+# logger.info("Creating database tables...")
+# Base.metadata.create_all(bind=engine)
+# logger.info("Database tables created successfully")
 
-    # # Connect to Redis for caching and rate limiting
-    # await connect_redis()
+# # Connect to Redis for caching and rate limiting
+# await connect_redis()
 
-    # yield
+# yield
 
-    # # Shutdown
-    # logger.info("Shutting down application...")
-    # logger.info("Closing database connections...")
-    # engine.dispose()
-    # logger.info("Closing Redis connection...")
-    # await close_redis()
-    # logger.info("Application shutdown complete")
+# # Shutdown
+# logger.info("Shutting down application...")
+# logger.info("Closing database connections...")
+# engine.dispose()
+# logger.info("Closing Redis connection...")
+# await close_redis()
+# logger.info("Application shutdown complete")
 
 
 # Create FastAPI application
@@ -109,8 +110,8 @@ routes = [
     # ),
     # (search.router, "/booking/search", ["search"], [Depends(auth_guard)]),
     # (upcoming_ipo_scrap.router, "/booking/scrap", ["scrap"], []),
-    (search.router,'/search',['search'],[])
-
+    (search.router, "/search", ["search"], []),
+    (documents.router, "/documents", ["documents"], []),
 ]
 
 for router, prefix, tags, dependencies in routes:

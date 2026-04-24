@@ -11,7 +11,7 @@ router = APIRouter()
 class TrieNode:
     def __init__(self):
         self.children = {}  # char -> TrieNode
-        self.indices = []   # references to data list indices
+        self.indices = []  # references to data list indices
         self.is_end = False
 
 
@@ -48,18 +48,33 @@ def insert(word: str, idx: int) -> None:
 def build_trie(file_path: str) -> None:
     reset_index()
     with open(file_path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
+        payload = json.load(f)
+    records: list[dict[str, Any]] = []
+    if isinstance(payload, list):
+        records = [item for item in payload if isinstance(item, dict)]
+    elif isinstance(payload, dict):
+        # Support both {"items": [...]} and a single object payload.
+        maybe_items = payload.get("items")
+        if isinstance(maybe_items, list):
+            records = [item for item in maybe_items if isinstance(item, dict)]
+        else:
+            records = [payload]
+    else:
+        # Backward compatibility for JSONL-formatted datasets.
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                obj = json.loads(line)
+                if isinstance(obj, dict):
+                    records.append(obj)
 
-            obj = json.loads(line)
-            data.append(obj)
-
-            name = obj.get("name", "")
-            if isinstance(name, str) and name.strip():
-                # Use actual in-memory index, not file line number
-                insert(name.lower().strip(), len(data) - 1)
+    for obj in records:
+        data.append(obj)
+        name = obj.get("name", "")
+        if isinstance(name, str) and name.strip():
+            insert(name.lower().strip(), len(data) - 1)
 
 
 @router.on_event("startup")
@@ -95,11 +110,13 @@ def _paginate(items: list[dict[str, Any]], page: int, per_page: int) -> dict[str
 def search_prefix(prefix: str) -> list[dict[str, Any]]:
     node = root
 
+    # print(node.children)
     for ch in prefix:
         if ch not in node.children:
             return []
         node = node.children[ch]
 
+    print(node)
     return [data[i] for i in node.indices if 0 <= i < len(data)]
 
 
