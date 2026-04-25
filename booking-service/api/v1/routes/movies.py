@@ -20,27 +20,14 @@ router = APIRouter()
 )
 def create_movie(movie: MovieCreate, db: Session = Depends(get_db)) -> MovieResponse:
     try:
-        new_movie = Movie(
-            title=movie.title,
-            description=movie.description,
-            duration_minutes=movie.duration_minutes,
-            genre=movie.genre,
-            director=movie.director,
-            release_date=movie.release_date,
-            rating=movie.rating,
-            language=movie.language,
-            is_imax=movie.is_imax,
-            poster_url=movie.poster_url,
-            trailer_url=movie.trailer_url,
-            cast=movie.cast,
-        )
+        new_movie = Movie(**movie.model_dump())
         db.add(new_movie)
         db.commit()
         db.refresh(new_movie)
 
         # Sync to Elasticsearch
-        search_service = SearchService(db)
-        search_service.sync_movie_to_elasticsearch(new_movie)
+        # search_service = SearchService(db)
+        # search_service.sync_movie_to_elasticsearch(new_movie)
 
         return MovieResponse.model_validate(new_movie)
     except Exception as e:
