@@ -78,6 +78,7 @@ class RagChatRequest(BaseModel):
     client_id: str | None = Field(default=None, min_length=1, max_length=128)
     message: str = Field(..., min_length=1)
     top_k: int | None = Field(default=None, ge=1, le=20)
+    use_langchain: bool = False
 
 
 class RagChatResponse(BaseModel):

@@ -60,9 +60,13 @@ type StreamCallbacks = {
   onDone: (answer: string) => void;
 };
 
-export const uploadRagDocument = async (file: File): Promise<RagDocument> => {
+export const uploadRagDocument = async (
+  file: File,
+  useLangchain = false,
+): Promise<RagDocument> => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("use_langchain", String(useLangchain));
 
   const response = await ragApi.post<{ document: RagDocument }>("/rag/documents", formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -83,11 +87,13 @@ export const sendRagMessage = async (
   threadId: string,
   clientId: string,
   message: string,
+  useLangchain = false,
 ): Promise<RagChatResponse> => {
   const response = await ragApi.post<RagChatResponse>("/rag/chat", {
     thread_id: threadId,
     client_id: clientId,
     message,
+    use_langchain: useLangchain,
   });
   return response.data;
 };
@@ -123,6 +129,7 @@ export const streamRagMessage = async (
   threadId: string,
   clientId: string,
   message: string,
+  useLangchain: boolean,
   callbacks: StreamCallbacks,
 ): Promise<void> => {
   const response = await fetch(`${AI_AGENT_BASE_URL}/rag/chat/stream`, {
@@ -135,6 +142,7 @@ export const streamRagMessage = async (
       thread_id: threadId,
       client_id: clientId,
       message,
+      use_langchain: useLangchain,
     }),
   });
 

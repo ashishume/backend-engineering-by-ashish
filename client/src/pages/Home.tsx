@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -40,6 +46,7 @@ function Home() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [useLangchain, setUseLangchain] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [status, setStatus] = useState("Upload a document, then ask about it.");
@@ -106,13 +113,19 @@ function Home() {
     }
 
     setIsUploading(true);
-    setStatus(`Indexing ${file.name}...`);
+    setStatus(
+      `Indexing ${file.name} with ${
+        useLangchain ? "LangChain/LangGraph" : "manual"
+      } engine...`,
+    );
     try {
-      await uploadRagDocument(file);
+      await uploadRagDocument(file, useLangchain);
       await refreshDocuments();
       setStatus(`${file.name} is indexed and ready.`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Document upload failed.");
+      setStatus(
+        error instanceof Error ? error.message : "Document upload failed.",
+      );
     } finally {
       event.target.value = "";
       setIsUploading(false);
@@ -147,7 +160,7 @@ function Home() {
     setMessages((current) => [...current, userMessage, assistantMessage]);
 
     try {
-      await streamRagMessage(activeThreadId, clientId, question, {
+      await streamRagMessage(activeThreadId, clientId, question, useLangchain, {
         onMetadata: (metadata) => {
           if (metadata.thread_id !== activeThreadId) {
             setActiveThreadId(metadata.thread_id);
@@ -165,8 +178,10 @@ function Home() {
           );
           setStatus(
             metadata.mode === "rag"
-              ? "Streaming answer with document context."
-              : "Streaming a general answer because no strong document match was found.",
+              ? `Streaming ${useLangchain ? "LangChain/LangGraph" : "manual"} answer with document context.`
+              : `Streaming a ${
+                  useLangchain ? "LangChain/LangGraph" : "manual"
+                } general answer because no strong document match was found.`,
           );
         },
         onToken: (token) => {
@@ -184,7 +199,9 @@ function Home() {
         },
       });
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Chat request failed.");
+      setStatus(
+        error instanceof Error ? error.message : "Chat request failed.",
+      );
       setMessages((current) =>
         current.map((messageItem) =>
           messageItem.id === assistantMessageId && !messageItem.content
@@ -237,6 +254,25 @@ function Home() {
           <span>{isUploading ? "Indexing..." : "Upload PDF, TXT, or MD"}</span>
         </label>
 
+        <label className="engine-toggle">
+          <input
+            type="checkbox"
+            checked={useLangchain}
+            onChange={(event) => setUseLangchain(event.target.checked)}
+            disabled={isThinking || isUploading}
+          />
+          <span>
+            <strong>
+              {useLangchain ? "LangChain/LangGraph" : "Manual engine"}
+            </strong>
+            <small>
+              {useLangchain
+                ? "Uses the parallel implementation in ai-agent/app/langchain_rag."
+                : "Uses your original RagService implementation."}
+            </small>
+          </span>
+        </label>
+
         <div className="document-list">
           <div className="list-header">
             <h2>Indexed documents</h2>
@@ -252,10 +288,14 @@ function Home() {
                 <div>
                   <strong>{document.filename}</strong>
                   <span>
-                    {document.chunk_count} chunks · {document.source_type.toUpperCase()}
+                    {document.chunk_count} chunks ·{" "}
+                    {document.source_type.toUpperCase()}
                   </span>
                 </div>
-                <button type="button" onClick={() => handleDelete(document.document_id)}>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(document.document_id)}
+                >
                   Delete
                 </button>
               </article>
@@ -270,8 +310,8 @@ function Home() {
             <div className="empty-chat">
               <h2>Ask anything</h2>
               <p>
-                Related questions use your indexed documents. Unrelated questions get a
-                regular assistant answer.
+                Related questions use your indexed documents. Unrelated
+                questions get a regular assistant answer.
               </p>
             </div>
           ) : (
@@ -298,7 +338,9 @@ function Home() {
                 {message.sources && message.sources.length > 0 && (
                   <div className="sources">
                     {message.sources.map((source) => (
-                      <details key={`${source.document_id}-${source.chunk_index}`}>
+                      <details
+                        key={`${source.document_id}-${source.chunk_index}`}
+                      >
                         <summary>
                           {source.filename} · chunk {source.chunk_index} · score{" "}
                           {source.score.toFixed(2)}
@@ -320,7 +362,10 @@ function Home() {
             placeholder="Ask about your document or anything else..."
             disabled={isThinking || !activeThreadId}
           />
-          <button type="submit" disabled={isThinking || !input.trim() || !activeThreadId}>
+          <button
+            type="submit"
+            disabled={isThinking || !input.trim() || !activeThreadId}
+          >
             {isThinking ? "Thinking" : "Send"}
           </button>
         </form>

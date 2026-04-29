@@ -90,6 +90,37 @@ input:disabled {
   display: none;
 }
 
+.engine-toggle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.engine-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #d7f2a4;
+}
+
+.engine-toggle span {
+  display: grid;
+  gap: 4px;
+}
+
+.engine-toggle strong {
+  color: #ffffff;
+}
+
+.engine-toggle small {
+  color: #c7ddce;
+  line-height: 1.35;
+}
+
 .document-list {
   display: flex;
   flex-direction: column;

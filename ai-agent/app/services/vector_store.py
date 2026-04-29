@@ -67,6 +67,12 @@ class QdrantVectorStore:
                         "source_type": source_type,
                         "chunk_index": chunk_index,
                         "text": chunk,
+                        "metadata": {
+                            "document_id": document_id,
+                            "filename": filename,
+                            "source_type": source_type,
+                            "chunk_index": chunk_index,
+                        },
                         "created_at": created_at.isoformat(),
                     },
                 )
@@ -107,11 +113,16 @@ class QdrantVectorStore:
         sources: list[SourceChunk] = []
         for point in points:
             payload = point.payload or {}
+            metadata = payload.get("metadata") or {}
             sources.append(
                 SourceChunk(
-                    document_id=str(payload.get("document_id", "")),
-                    filename=str(payload.get("filename", "")),
-                    chunk_index=int(payload.get("chunk_index", 0)),
+                    document_id=str(
+                        payload.get("document_id") or metadata.get("document_id", "")
+                    ),
+                    filename=str(payload.get("filename") or metadata.get("filename", "")),
+                    chunk_index=int(
+                        payload.get("chunk_index") or metadata.get("chunk_index", 0)
+                    ),
                     text=str(payload.get("text", "")),
                     score=float(point.score or 0.0),
                 )
@@ -144,13 +155,22 @@ class QdrantVectorStore:
             )
             for point in points:
                 payload = point.payload or {}
-                document_id = str(payload.get("document_id", ""))
+                metadata = payload.get("metadata") or {}
+                document_id = str(
+                    payload.get("document_id") or metadata.get("document_id", "")
+                )
                 if not document_id:
                     continue
-                docs[document_id]["filename"] = payload.get("filename", "")
-                docs[document_id]["source_type"] = payload.get("source_type", "")
+                docs[document_id]["filename"] = payload.get("filename") or metadata.get(
+                    "filename", ""
+                )
+                docs[document_id]["source_type"] = payload.get(
+                    "source_type"
+                ) or metadata.get("source_type", "")
                 docs[document_id]["chunk_count"] += 1
-                docs[document_id]["created_at"] = payload.get("created_at")
+                docs[document_id]["created_at"] = payload.get(
+                    "created_at"
+                ) or metadata.get("created_at")
             if offset is None:
                 break
 
@@ -184,11 +204,15 @@ class QdrantVectorStore:
             collection_name=self.collection_name,
             points_selector=models.FilterSelector(
                 filter=models.Filter(
-                    must=[
+                    should=[
                         models.FieldCondition(
                             key="document_id",
                             match=models.MatchValue(value=document_id),
-                        )
+                        ),
+                        models.FieldCondition(
+                            key="metadata.document_id",
+                            match=models.MatchValue(value=document_id),
+                        ),
                     ]
                 )
             ),

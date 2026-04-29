@@ -1,8 +1,18 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    UploadFile,
+    status,
+)
 from fastapi.responses import StreamingResponse
 
+from app.langchain_rag.service import LangChainGraphRagService
 from app.schemas.rag import (
     ChatThreadResponse,
     CreateThreadRequest,
@@ -23,13 +33,20 @@ def get_rag_service(request: Request) -> RagService:
     return request.app.state.rag_service
 
 
+def get_langchain_rag_service(request: Request) -> LangChainGraphRagService:
+    return request.app.state.langchain_rag_service
+
+
 @router.post("/documents", response_model=UploadDocumentResponse)
 async def upload_document(
     file: UploadFile = File(...),
+    use_langchain: bool = Form(False),
     service: RagService = Depends(get_rag_service),
+    langchain_service: LangChainGraphRagService = Depends(get_langchain_rag_service),
 ):
     try:
-        document = await service.index_document(file)
+        active_service = langchain_service if use_langchain else service
+        document = await active_service.index_document(file)
         return UploadDocumentResponse(document=document)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
@@ -77,9 +94,11 @@ async def get_thread_messages(
 async def chat(
     request: RagChatRequest,
     service: RagService = Depends(get_rag_service),
+    langchain_service: LangChainGraphRagService = Depends(get_langchain_rag_service),
 ):
     try:
-        return await service.chat(
+        active_service = langchain_service if request.use_langchain else service
+        return await active_service.chat(
             session_id=request.session_id,
             thread_id=request.thread_id,
             client_id=request.client_id,
@@ -94,9 +113,11 @@ async def chat(
 async def stream_chat(
     request: RagChatRequest,
     service: RagService = Depends(get_rag_service),
+    langchain_service: LangChainGraphRagService = Depends(get_langchain_rag_service),
 ):
+    active_service = langchain_service if request.use_langchain else service
     return StreamingResponse(
-        service.stream_chat(
+        active_service.stream_chat(
             session_id=request.session_id,
             thread_id=request.thread_id,
             client_id=request.client_id,

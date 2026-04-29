@@ -5,6 +5,7 @@ from app.api.routes.rag import router as rag_router
 from app.core.clients import build_openrouter_client, build_qdrant_client
 from app.core.config import settings
 from app.db.database import SessionLocal, init_db
+from app.langchain_rag.service import LangChainGraphRagService
 from app.repositories.thread_repository import ThreadRepository
 from app.services.chunker import TextChunker
 from app.services.document_loader import DocumentLoader
@@ -29,10 +30,16 @@ app.add_middleware(
 
 openrouter_client = build_openrouter_client()
 qdrant_client = build_qdrant_client()
+loader = DocumentLoader()
+manual_vector_store = QdrantVectorStore(
+    client=qdrant_client,
+    collection_name=settings.qdrant_collection,
+)
+thread_repository = ThreadRepository(SessionLocal)
 rag_service = RagService(
     settings=settings,
     llm_client=openrouter_client,
-    loader=DocumentLoader(),
+    loader=loader,
     chunker=TextChunker(
         chunk_size=settings.chunk_token_size,
         chunk_overlap=settings.chunk_token_overlap,
@@ -42,14 +49,19 @@ rag_service = RagService(
         model=settings.embedding_model,
         batch_size=settings.embedding_batch_size,
     ),
-    vector_store=QdrantVectorStore(
-        client=qdrant_client,
-        collection_name=settings.qdrant_collection,
-    ),
+    vector_store=manual_vector_store,
     memory=SessionMemoryService(token_limit=settings.memory_token_limit),
-    thread_repository=ThreadRepository(SessionLocal),
+    thread_repository=thread_repository,
 )
 app.state.rag_service = rag_service
+app.state.langchain_rag_service = LangChainGraphRagService(
+    settings=settings,
+    qdrant_client=qdrant_client,
+    loader=loader,
+    manual_vector_store=manual_vector_store,
+    memory=SessionMemoryService(token_limit=settings.memory_token_limit),
+    thread_repository=thread_repository,
+)
 
 app.include_router(rag_router)
 
