@@ -1,7 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getWorkspaces } from "../api/document";
-import { useQuery } from "@tanstack/react-query";
 
 function Navbar() {
   const { logout } = useAuth();
@@ -14,11 +12,6 @@ function Navbar() {
       console.error("Logout failed:", error);
     }
   };
-
-  const { data: workspaces } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: () => getWorkspaces(),
-  });
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg">

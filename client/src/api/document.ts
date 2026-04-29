@@ -1,5 +1,4 @@
 import axios from "axios";
-import { authApi } from ".";
 // Use environment variable if set, otherwise use relative URL through nginx
 const DOCUMENT_BASE_URL = import.meta.env.VITE_DOCUMENT_API_URL || "/documents";
 

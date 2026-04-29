@@ -1,139 +1,147 @@
 services:
-  # Auth Service Database
-  auth-db:
-    image: postgres:16-alpine
-    container_name: auth-db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: auth_service
-    ports:
-      - "5435:5432"
-    volumes:
-      - auth-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - microservices-network
+  # # Auth Service Database
+  # auth-db:
+  #   image: postgres:16-alpine
+  #   container_name: auth-db
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: auth_service
+  #   ports:
+  #     - "5435:5432"
+  #   volumes:
+  #     - auth-db-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - microservices-network
 
-  # Auth Service
-  auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
-    container_name: auth-service
-    ports:
-      - "8000:8000"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: auth_service
-      POSTGRES_HOST: auth-db
-      POSTGRES_PORT: 5432
-      TOKEN_SECRET: dev-secret-key-change-in-production
-      ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: 30
-    depends_on:
-      auth-db:
-        condition: service_healthy
-    volumes:
-      - ./auth-service:/app
-    networks:
-      - microservices-network
-    restart: unless-stopped
+  # # Auth Service
+  # auth-service:
+  #   build:
+  #     context: ./auth-service
+  #     dockerfile: Dockerfile
+  #   container_name: auth-service
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: auth_service
+  #     POSTGRES_HOST: auth-db
+  #     POSTGRES_PORT: 5432
+  #     TOKEN_SECRET: dev-secret-key-change-in-production
+  #     ALGORITHM: HS256
+  #     ACCESS_TOKEN_EXPIRE_MINUTES: 30
+  #   depends_on:
+  #     auth-db:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./auth-service:/app
+  #   networks:
+  #     - microservices-network
+  #   restart: unless-stopped
 
-  # Elasticsearch Service
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --silent --fail localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
-    networks:
-      - microservices-network
-    restart: unless-stopped
+  # # Elasticsearch Service
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+  #   container_name: elasticsearch
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   volumes:
+  #     - elasticsearch-data:/usr/share/elasticsearch/data
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD-SHELL",
+  #         "curl --silent --fail localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s || exit 1",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 40s
+  #   networks:
+  #     - microservices-network
+  #   restart: unless-stopped
 
-  # Booking Service Database
-  booking-db:
-    image: postgres:16-alpine
-    container_name: booking-db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: booking_service
-    ports:
-      - "5436:5432"
-    volumes:
-      - booking-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - microservices-network
+  # # Booking Service Database
+  # booking-db:
+  #   image: postgres:16-alpine
+  #   container_name: booking-db
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: booking_service
+  #   ports:
+  #     - "5436:5432"
+  #   volumes:
+  #     - booking-db-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - microservices-network
 
-  # Booking Service
-  booking-service:
-    build:
-      context: ./booking-service
-      dockerfile: Dockerfile
-    container_name: booking-service
-    ports:
-      - "8003:8003"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: booking_service
-      POSTGRES_HOST: booking-db
-      POSTGRES_PORT: 5432
-      AUTH_SERVICE_URL: http://auth-service:8000
-      REDIS_URL: redis://redis:6379
-      TOKEN_SECRET: dev-secret-key-change-in-production
-      ELASTICSEARCH_HOST: elasticsearch
-      ELASTICSEARCH_PORT: 9200
-      ELASTICSEARCH_URL: http://elasticsearch:9200
-    depends_on:
-      redis:
-        condition: service_healthy
-      booking-db:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-      auth-service:
-        condition: service_started
-    volumes:
-      - ./booking-service:/app
-    # Increase shared memory for Playwright/Chromium (default 64MB is too small)
-    shm_size: "2gb"
-    networks:
-      - microservices-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8003/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+  # # Booking Service
+  # booking-service:
+  #   build:
+  #     context: ./booking-service
+  #     dockerfile: Dockerfile
+  #   container_name: booking-service
+  #   ports:
+  #     - "8003:8003"
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: booking_service
+  #     POSTGRES_HOST: booking-db
+  #     POSTGRES_PORT: 5432
+  #     AUTH_SERVICE_URL: http://auth-service:8000
+  #     REDIS_URL: redis://redis:6379
+  #     TOKEN_SECRET: dev-secret-key-change-in-production
+  #     ELASTICSEARCH_HOST: elasticsearch
+  #     ELASTICSEARCH_PORT: 9200
+  #     ELASTICSEARCH_URL: http://elasticsearch:9200
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #     booking-db:
+  #       condition: service_healthy
+  #     elasticsearch:
+  #       condition: service_healthy
+  #     auth-service:
+  #       condition: service_started
+  #   volumes:
+  #     - ./booking-service:/app
+  #   # Increase shared memory for Playwright/Chromium (default 64MB is too small)
+  #   shm_size: "2gb"
+  #   networks:
+  #     - microservices-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--no-verbose",
+  #         "--tries=1",
+  #         "--spider",
+  #         "http://localhost:8003/",
+  #       ]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
 
   # Document Service Database
   # document-db:
@@ -243,6 +251,7 @@ services:
       - VITE_AUTH_SERVICE_URL=http://localhost:8000
       - VITE_BOOKING_SERVICE_URL=http://localhost:8003
       - VITE_DOCUMENT_API_URL=http://localhost:8001
+      - VITE_AI_AGENT_API_URL=http://localhost:8001
     volumes:
       - ./client:/app
       - /app/node_modules
@@ -250,22 +259,90 @@ services:
       - microservices-network
     restart: unless-stopped
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: redis
+  # RAG Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
     ports:
-      - "6379:6379"
+      - "6333:6333"
+      - "6334:6334"
     volumes:
-      - redis-data:/data
+      - qdrant-data:/qdrant/storage
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # AI Agent RAG Service
+  ai-agent-db:
+    image: postgres:16-alpine
+    container_name: ai-agent-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ai_agent
+    ports:
+      - "5439:5432"
+    volumes:
+      - ai-agent-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ai_agent"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - microservices-network
     restart: unless-stopped
+
+  ai-agent:
+    build:
+      context: ./ai-agent
+      dockerfile: Dockerfile
+    container_name: ai-agent
+    ports:
+      - "8001:8001"
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_BASE_URL: https://openrouter.ai/api/v1
+      OPENROUTER_HTTP_REFERER: http://localhost:5173
+      OPENROUTER_APP_TITLE: Backend Engineering RAG
+      CHAT_MODEL: openai/gpt-4o-mini
+      EMBEDDING_MODEL: openai/text-embedding-3-small
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: rag_documents
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ai_agent
+      POSTGRES_HOST: ai-agent-db
+      POSTGRES_PORT: 5432
+      MEMORY_TOKEN_LIMIT: 6000
+      MEMORY_RECENT_MESSAGES_LIMIT: 24
+    depends_on:
+      qdrant:
+        condition: service_started
+      ai-agent-db:
+        condition: service_healthy
+    volumes:
+      - ./ai-agent:/app
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Redis Cache
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - microservices-network
+  #   restart: unless-stopped
 
   # Nginx Reverse Proxy
   # nginx:
@@ -293,9 +370,11 @@ networks:
     driver: bridge
 
 volumes:
-  auth-db-data:
-  booking-db-data:
+  # auth-db-data:
+  # booking-db-data:
   # document-db-data:
-  redis-data:
+  # redis-data:
   # food-db-data:
-  elasticsearch-data:
+  # elasticsearch-data:
+  qdrant-data:
+  ai-agent-db-data:
