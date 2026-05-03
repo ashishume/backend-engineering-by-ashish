@@ -13,7 +13,7 @@ docker-compose up -d
 
 This will start:
 
-- All backend services (auth, booking, etc.)
+- Backend services
 - Databases
 - Redis
 - Elasticsearch
@@ -26,9 +26,6 @@ Once running, you can access all services through nginx on port 80:
 - **Frontend**: http://localhost/
 - **Auth Service**: http://localhost/auth/
 - **Booking Service**: http://localhost/booking/
-- **Product Service**: http://localhost/product/ (when enabled)
-- **Inventory Service**: http://localhost/inventory/ (when enabled)
-- **Food Service**: http://localhost/food/ (when enabled)
 
 ### 3. API Documentation
 
@@ -36,9 +33,6 @@ Each service's API docs are available at:
 
 - Auth: http://localhost/auth/docs
 - Booking: http://localhost/booking/docs
-- Product: http://localhost/product/docs (when enabled)
-- Inventory: http://localhost/inventory/docs (when enabled)
-- Food: http://localhost/food/docs (when enabled)
 
 ### 4. Health Check
 
@@ -54,9 +48,7 @@ If you want to run services individually (not through nginx):
 
 - Auth Service: http://localhost:8000
 - Booking Service: http://localhost:8003
-- Product Service: http://localhost:8001 (when enabled)
-- Inventory Service: http://localhost:8002 (when enabled)
-- Food Service: http://localhost:8004 (when enabled)
+- AI Agent RAG Service: http://localhost:8001
 
 ## Stopping Services
 
@@ -135,16 +127,3 @@ Then access via: http://localhost:8080
    ```bash
    docker exec -it nginx nginx -t
    ```
-
-## Enabling Commented Services
-
-To enable product, inventory, or food services:
-
-1. Uncomment the service blocks in `docker-compose.yml`
-2. Uncomment the corresponding database services
-3. Restart docker-compose:
-   ```bash
-   docker-compose up -d
-   ```
-
-The nginx configuration already includes routing for all services, so no changes needed there.

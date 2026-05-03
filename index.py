@@ -1,10 +1,19 @@
-def maxSubArray(nums):
-    n = len(nums)
-    sum = (n * (n + 1)) / 2
-    curr_sum = 0
-    for num in nums:
-        curr_sum += num
-    return int(sum - curr_sum)
+def longestCommonPrefix(strs):
+    i, j = 0, 0
+    n = len(strs[0])
+    prefix = strs[0]
+    for ch in strs:
+        n = min(n, len(ch))
+
+    print(n)
+    for ch in strs[1:]:
+        while ch.find(prefix) != 0:
+            prefix = prefix[:-1]
+            if prefix == "":
+                return ""
+
+    return prefix
 
 
-print(maxSubArray([0, 1, 2, 4, 5, 6]))
+print(longestCommonPrefix(["dog", "racecar", "car"]))
+# print(longestCommonPrefix(["interview", "inter", "internal"]))

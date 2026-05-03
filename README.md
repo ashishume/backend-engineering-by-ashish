@@ -2,7 +2,7 @@
 
 ## 📋 Project Overview
 
-A **comprehensive microservices-based application** built with FastAPI, demonstrating modern backend architecture with independent services communicating via HTTP/REST APIs, WebSockets, and message queues. Features authentication, booking systems, food ordering, and a React frontend.
+A **comprehensive microservices-based application** built with FastAPI, demonstrating modern backend architecture with independent services communicating via HTTP/REST APIs and a React frontend. Features authentication, booking systems, RAG document chat, and supporting infrastructure.
 
 ### System Architecture
 
@@ -84,30 +84,27 @@ A **comprehensive microservices-based application** built with FastAPI, demonstr
 
 ---
 
-### 3. Food Service (Port 8004) ⚠️ Commented in Docker
+### 3. AI Agent RAG Service (Port 8001) ✅ Active
 
-**Purpose**: Food ordering system with restaurant and menu management
+**Purpose**: Document ingestion and conversational RAG assistant
 
-**Database**: `food_service` on PostgreSQL (Port 5437) - commented
+**Database**: `ai_agent` on PostgreSQL (Port 5439) with Qdrant vector storage
 
 **Features**:
 
-- Category, restaurant, food, menu, and order management
-- WebSocket support for real-time updates
-- Optional database sharding for horizontal scaling
-- Redis-based rate limiting with configurable headers
-- Inter-service HTTP communication using httpx
+- Upload, list, and delete RAG documents
+- Chat over indexed documents
+- Thread and message persistence
+- Qdrant-backed vector search
 
-**Key Tables**: `categories`, `restaurants`, `foods`, `menu`, `orders`, `food_orders`
+**API Endpoints**:
 
-**Advanced Features**:
+- `POST /rag/documents` - Upload a document
+- `GET /rag/documents` - List uploaded documents
+- `DELETE /rag/documents/{document_id}` - Delete a document
+- `POST /rag/chat` - Chat with the assistant
 
-- Database sharding (enable with `ENABLE_SHARDING=true`)
-- Rate limiting (configurable via env vars)
-- HTTP client utility for inter-service calls
-- WebSocket endpoint at `/ws`
-
-**Tech Stack**: FastAPI, SQLAlchemy, PostgreSQL, Redis, httpx, WebSocket, Alembic
+**Tech Stack**: FastAPI, PostgreSQL, Qdrant, OpenRouter, LlamaIndex/LangChain components
 
 ---
 
@@ -176,16 +173,14 @@ A **comprehensive microservices-based application** built with FastAPI, demonstr
 
 **HTTP/REST**: Async httpx client, JWT cookie forwarding, 10s timeout
 
-**WebSocket**: Food Service provides `/ws` endpoint for real-time updates
-
 **Search**: Booking Service → Elasticsearch (full-text search across multiple indices)
 
-**Caching**: Food Service → Redis (rate limiting with `X-RateLimit-*` headers)
+**Vector Search**: AI Agent → Qdrant
 
 **Service Discovery**:
 
-- Docker: `http://auth-service:8000`, `http://booking-service:8003`
-- Local: `http://localhost:8000`, `http://localhost:8003`
+- Docker: `http://auth-service:8000`, `http://booking-service:8003`, `http://ai-agent:8001`
+- Local: `http://localhost:8000`, `http://localhost:8003`, `http://localhost:8001`
 
 ---
 
@@ -197,16 +192,13 @@ A **comprehensive microservices-based application** built with FastAPI, demonstr
 ✅ auth-service + auth-db (PostgreSQL:5435)
 ✅ booking-service + booking-db (PostgreSQL:5436)
 ✅ client (React frontend:5173)
-✅ nginx (Reverse proxy:80)
-✅ elasticsearch (Port:9200)
-✅ redis (Port:6379)
-
-⚠️ food-service + food-db (PostgreSQL:5437) - Commented
+✅ ai-agent + ai-agent-db (PostgreSQL:5439)
+✅ qdrant (Vector database:6333/6334)
 ```
 
 **Networks**: `microservices-network` (bridge driver)
 
-**Volumes**: Persistent storage for databases, Elasticsearch, Redis
+**Volumes**: Persistent storage for active databases and Qdrant
 
 **Health Checks**: All databases include health checks
 
@@ -249,7 +241,8 @@ Access:
 - Frontend: http://localhost (via Nginx)
 - Auth Service: http://localhost:8000
 - Booking Service: http://localhost:8003
-- API Docs: http://localhost:8000/docs, http://localhost:8003/docs
+- AI Agent: http://localhost:8001
+- API Docs: http://localhost:8000/docs, http://localhost:8003/docs, http://localhost:8001/docs
 
 ### Local Development
 
@@ -305,13 +298,12 @@ The `backend_system_design/` folder contains **educational system design impleme
 ## 🎯 Key Features & Patterns
 
 1. **Microservices Architecture** - Service isolation, independent databases, autonomous deployment
-2. **Repository Pattern** - Database access abstraction (Booking/Food Services)
+2. **Repository Pattern** - Database access abstraction
 3. **Service Layer Pattern** - Business logic separation
 4. **Middleware Pattern** - CORS, authentication
 5. **Lifespan Events** - Database initialization, Elasticsearch index creation, Redis connection management
-6. **Database Sharding** - Optional horizontal scaling (Food Service)
-7. **Rate Limiting** - Redis-based with configurable headers
-8. **Error Handling** - Comprehensive exception management with logging
+6. **RAG Pipeline** - Document ingestion, embeddings, vector search, and chat
+7. **Error Handling** - Comprehensive exception management with logging
 
 ---
 
@@ -337,7 +329,7 @@ All services provide auto-generated documentation:
 backend-engineering-by-ashish/
 ├── auth-service/          # Auth service (✅ Active)
 ├── booking-service/       # Booking service (✅ Active)
-├── food-service/          # Food service (⚠️ Commented)
+├── ai-agent/              # RAG assistant service (✅ Active)
 ├── client/                # React frontend (✅ Active)
 ├── nginx/                 # Reverse proxy config (✅ Active)
 ├── backend_system_design/ # System design implementations
@@ -356,8 +348,8 @@ backend-engineering-by-ashish/
 ✅ Database Relationships | ✅ Inter-Service Communication | ✅ Docker Containerization  
 ✅ Database Migrations | ✅ Error Handling & Logging | ✅ API Documentation  
 ✅ Dependency Injection | ✅ Type Safety (Pydantic) | ✅ Async Programming  
-✅ Elasticsearch Integration | ✅ Redis Integration | ✅ WebSocket Support  
-✅ Repository & Service Layer Patterns | ✅ Rate Limiting | ✅ System Design Patterns  
+✅ Elasticsearch Integration | ✅ Vector Search | ✅ RAG Workflows  
+✅ Repository & Service Layer Patterns | ✅ System Design Patterns  
 ✅ Concurrency Handling | ✅ Real-World System Design
 
 ---
@@ -365,8 +357,8 @@ backend-engineering-by-ashish/
 ## 🚧 Known Limitations
 
 - No circuit breaker pattern
-- No message queue (WebSocket available in Food Service)
-- Limited caching (Redis used primarily for rate limiting)
+- No message queue
+- Limited caching
 - Basic logging (no centralized aggregation)
 - No monitoring/metrics collection
 - No service mesh or API gateway
@@ -375,15 +367,14 @@ backend-engineering-by-ashish/
 
 ## 🎉 Summary
 
-**Active Services**: Auth Service, Booking Service, Client (React), Nginx, Elasticsearch, Redis  
-**Commented Services**: Food Service (can be enabled in docker-compose.yml)
+**Active Services**: Auth Service, Booking Service, AI Agent, Client (React), Qdrant
 
 **Key Features**:
 
-- 3 independent microservices (Auth, Booking, Food)
+- Independent backend services for auth, booking, and RAG
 - JWT-based authentication with secure password hashing
 - Elasticsearch full-text search
-- Redis rate limiting
+- Qdrant vector search for document chat
 - React frontend with TypeScript
 - Docker containerization
 - 3 system design implementations (Movie Booking, Parking, Uber/Ride-Sharing)
