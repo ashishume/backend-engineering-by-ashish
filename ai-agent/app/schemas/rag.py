@@ -52,12 +52,15 @@ class ListThreadsResponse(BaseModel):
     threads: list[ChatThreadResponse]
 
 
+ChatMode = Literal["rag", "general", "multi_agent"]
+
+
 class ChatMessageResponse(BaseModel):
     id: int
     thread_id: str
     role: Literal["user", "assistant"]
     content: str
-    mode: Literal["rag", "general"] | None = None
+    mode: ChatMode | None = None
     created_at: datetime
 
 
@@ -85,5 +88,28 @@ class RagChatResponse(BaseModel):
     answer: str
     mode: Literal["rag", "general"]
     sources: list[SourceChunk] = Field(default_factory=list)
+    session_id: str
+    thread_id: str
+
+
+class MultiAgentChatRequest(BaseModel):
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+    thread_id: str | None = Field(default=None, min_length=1, max_length=128)
+    client_id: str | None = Field(default=None, min_length=1, max_length=128)
+    message: str = Field(..., min_length=1)
+    top_k: int | None = Field(default=None, ge=1, le=20)
+
+
+class AgentStep(BaseModel):
+    agent: str
+    task: str
+    output: str
+
+
+class MultiAgentChatResponse(BaseModel):
+    answer: str
+    mode: Literal["multi_agent"] = "multi_agent"
+    sources: list[SourceChunk] = Field(default_factory=list)
+    agent_steps: list[AgentStep] = Field(default_factory=list)
     session_id: str
     thread_id: str

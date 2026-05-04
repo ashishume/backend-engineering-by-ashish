@@ -413,6 +413,261 @@ input:disabled {
   }
 }
 
+.support-page {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) minmax(360px, 520px);
+  align-items: end;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 48px;
+  padding: 40px;
+  background:
+    linear-gradient(135deg, rgba(248, 250, 252, 0.92), rgba(238, 242, 246, 0.96)),
+    #f7faf8;
+  color: #17211c;
+}
+
+.support-workspace {
+  display: grid;
+  gap: 28px;
+  align-self: center;
+}
+
+.support-workspace h1 {
+  max-width: 380px;
+  margin: 0;
+  color: #14231d;
+  font-size: 2.6rem;
+  line-height: 1.05;
+}
+
+.support-subtitle {
+  max-width: 420px;
+  color: #52625b;
+  line-height: 1.65;
+}
+
+.support-documents {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+  border: 1px solid #d9e3dd;
+  border-radius: 8px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 18px 44px rgba(23, 33, 28, 0.08);
+}
+
+.support-documents h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.support-documents > p {
+  margin: 0;
+  color: #66736c;
+}
+
+.support-document {
+  display: grid;
+  gap: 4px;
+  border-top: 1px solid #edf2ef;
+  padding-top: 12px;
+}
+
+.support-document strong {
+  overflow-wrap: anywhere;
+}
+
+.support-document span,
+.support-popup-header span,
+.agent-trace span {
+  color: #66736c;
+  font-size: 0.86rem;
+}
+
+.support-upload {
+  display: grid;
+  min-height: 48px;
+  place-items: center;
+  border: 1px dashed #9fb4a8;
+  border-radius: 8px;
+  color: #17321f;
+  background: #f5faf5;
+  font-weight: 700;
+}
+
+.support-upload input {
+  display: none;
+}
+
+.support-popup {
+  display: grid;
+  grid-template-rows: auto minmax(360px, 64vh) auto;
+  min-height: 560px;
+  overflow: hidden;
+  border: 1px solid #d6e0db;
+  border-radius: 8px;
+  background: #fbfdfb;
+  box-shadow: 0 22px 60px rgba(16, 24, 20, 0.18);
+}
+
+.support-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e3eae6;
+  background: #ffffff;
+}
+
+.support-popup-header div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.support-popup-header strong {
+  color: #14231d;
+}
+
+.support-live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #2f9d63;
+}
+
+.support-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.support-empty {
+  margin: auto;
+  max-width: 320px;
+  text-align: center;
+}
+
+.support-empty h2 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+}
+
+.support-empty p {
+  margin: 0;
+  color: #66736c;
+  line-height: 1.55;
+}
+
+.support-message {
+  max-width: 88%;
+  border-radius: 8px;
+  padding: 12px 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.support-message p {
+  margin: 0 0 10px;
+}
+
+.support-message :last-child {
+  margin-bottom: 0;
+}
+
+.support-message.user {
+  align-self: flex-end;
+  color: #ffffff;
+  background: #1f6b4a;
+}
+
+.support-message.assistant {
+  align-self: flex-start;
+  border: 1px solid #dde7e1;
+  background: #ffffff;
+}
+
+.agent-trace {
+  margin-top: 12px;
+  border-top: 1px solid #edf2ef;
+  padding-top: 10px;
+}
+
+.agent-trace summary {
+  cursor: pointer;
+  color: #275b42;
+  font-weight: 800;
+}
+
+.agent-trace div {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.agent-trace p {
+  color: #4e5d56;
+  font-size: 0.9rem;
+}
+
+.support-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 14px;
+  border-top: 1px solid #e3eae6;
+  background: #ffffff;
+}
+
+.support-form input {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid #cbd8d1;
+  border-radius: 6px;
+  padding: 0 12px;
+}
+
+.support-form button {
+  min-height: 44px;
+  border-radius: 6px;
+  padding: 0 16px;
+  color: #ffffff;
+  background: #1f6b4a;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .support-page {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 24px;
+    padding: 20px;
+  }
+
+  .support-workspace h1 {
+    font-size: 2rem;
+  }
+
+  .support-popup {
+    min-height: 620px;
+  }
+}
+
+@media (max-width: 560px) {
+  .support-form {
+    grid-template-columns: 1fr;
+  }
+
+  .support-message {
+    max-width: 96%;
+  }
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;

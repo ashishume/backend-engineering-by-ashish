@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import MultiAgentChat from "./pages/MultiAgentChat";
 // import ProtectedRoute from "./components/ProtectedRoute";
 // import Movies from "./pages/Movies";
 // import MovieDetails from "./pages/MovieDetails";
@@ -18,6 +19,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
+        <Route path="/multi-agent-chat" element={<MultiAgentChat />} />
         {/* <Route
           path="/movies"
           element={

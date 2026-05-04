@@ -24,7 +24,7 @@ type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  mode?: "rag" | "general";
+  mode?: "rag" | "general" | "multi_agent";
   sources?: SourceChunk[];
 };
 
@@ -329,7 +329,9 @@ function Home() {
                 {message.role === "assistant" && (
                   <div className="message-meta">
                     {message.mode
-                      ? message.mode === "rag"
+                      ? message.mode === "multi_agent"
+                        ? "Multi-agent answer"
+                        : message.mode === "rag"
                         ? "RAG answer"
                         : "General answer"
                       : "Streaming..."}

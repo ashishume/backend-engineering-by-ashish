@@ -30,6 +30,21 @@ export type RagChatResponse = {
   thread_id: string;
 };
 
+export type AgentStep = {
+  agent: string;
+  task: string;
+  output: string;
+};
+
+export type MultiAgentChatResponse = {
+  answer: string;
+  mode: "multi_agent";
+  sources: SourceChunk[];
+  agent_steps: AgentStep[];
+  session_id: string;
+  thread_id: string;
+};
+
 export type ChatThread = {
   thread_id: string;
   client_id: string;
@@ -43,7 +58,7 @@ export type PersistedChatMessage = {
   thread_id: string;
   role: "user" | "assistant";
   content: string;
-  mode: "rag" | "general" | null;
+  mode: "rag" | "general" | "multi_agent" | null;
   created_at: string;
 };
 
@@ -94,6 +109,19 @@ export const sendRagMessage = async (
     client_id: clientId,
     message,
     use_langchain: useLangchain,
+  });
+  return response.data;
+};
+
+export const sendMultiAgentMessage = async (
+  threadId: string,
+  clientId: string,
+  message: string,
+): Promise<MultiAgentChatResponse> => {
+  const response = await ragApi.post<MultiAgentChatResponse>("/multi-agent/chat", {
+    thread_id: threadId,
+    client_id: clientId,
+    message,
   });
   return response.data;
 };

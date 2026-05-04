@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.routes.multi_agent import router as multi_agent_router
 from app.api.routes.rag import router as rag_router
 from app.core.clients import build_openrouter_client, build_qdrant_client
 from app.core.config import settings
 from app.db.database import SessionLocal, init_db
 from app.langchain_rag.service import LangChainGraphRagService
+from app.multi_agent.service import MultiAgentCustomerService
 from app.repositories.thread_repository import ThreadRepository
 from app.services.chunker import TextChunker
 from app.services.document_loader import DocumentLoader
@@ -62,8 +64,16 @@ app.state.langchain_rag_service = LangChainGraphRagService(
     memory=SessionMemoryService(token_limit=settings.memory_token_limit),
     thread_repository=thread_repository,
 )
+app.state.multi_agent_service = MultiAgentCustomerService(
+    settings=settings,
+    embeddings=rag_service.embeddings,
+    vector_store=manual_vector_store,
+    memory=SessionMemoryService(token_limit=settings.memory_token_limit),
+    thread_repository=thread_repository,
+)
 
 app.include_router(rag_router)
+app.include_router(multi_agent_router)
 
 
 @app.on_event("startup")
