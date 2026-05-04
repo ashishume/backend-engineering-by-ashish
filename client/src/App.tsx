@@ -4,6 +4,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import MultiAgentChat from "./pages/MultiAgentChat";
+import NotionAgentChat from "./pages/NotionAgentChat";
 // import ProtectedRoute from "./components/ProtectedRoute";
 // import Movies from "./pages/Movies";
 // import MovieDetails from "./pages/MovieDetails";
@@ -20,6 +21,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/multi-agent-chat" element={<MultiAgentChat />} />
+        <Route path="/notion-agent-chat" element={<NotionAgentChat />} />
         {/* <Route
           path="/movies"
           element={

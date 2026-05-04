@@ -52,7 +52,7 @@ class ListThreadsResponse(BaseModel):
     threads: list[ChatThreadResponse]
 
 
-ChatMode = Literal["rag", "general", "multi_agent"]
+ChatMode = Literal["rag", "general", "multi_agent", "notion_rag"]
 
 
 class ChatMessageResponse(BaseModel):

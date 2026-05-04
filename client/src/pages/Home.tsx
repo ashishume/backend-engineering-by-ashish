@@ -5,6 +5,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -221,6 +222,10 @@ function Home() {
           <p className="eyebrow">RAG Workspace</p>
           <h1>Document chat</h1>
           <p className="status-text">{status}</p>
+          <div className="workspace-links">
+            <Link to="/notion-agent-chat">Notion memory</Link>
+            <Link to="/multi-agent-chat">Multi-agent support</Link>
+          </div>
         </div>
 
         <div className="thread-list">

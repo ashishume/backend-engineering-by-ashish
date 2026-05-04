@@ -1,19 +1,21 @@
-def longestCommonPrefix(strs):
-    i, j = 0, 0
-    n = len(strs[0])
-    prefix = strs[0]
-    for ch in strs:
-        n = min(n, len(ch))
-
-    print(n)
-    for ch in strs[1:]:
-        while ch.find(prefix) != 0:
-            prefix = prefix[:-1]
-            if prefix == "":
-                return ""
-
-    return prefix
+from itertools import count
 
 
-print(longestCommonPrefix(["dog", "racecar", "car"]))
-# print(longestCommonPrefix(["interview", "inter", "internal"]))
+def lengthOfLongestSubstring(str) -> int:
+    left, right = 0, 0
+    n = len(str)
+    max_count = 0
+    st = set()
+    while left < n and right < n:
+        if str[right] not in st:
+            st.add(str[right])
+            right += 1
+            max_count = max(max_count, right - left)
+        else:
+            st.discard(str[left])
+            left += 1
+
+    return max_count
+
+
+print(lengthOfLongestSubstring("abcabcbb"))

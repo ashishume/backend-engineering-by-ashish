@@ -50,7 +50,6 @@ class TextChunker:
         sections = self._split_recursively(text, ["\n\n", "\n", ". ", " "])
         chunks: list[str] = []
         current_tokens: list[int] = []
-        print(sections)
         for section in sections:
             section_tokens = self.encoding.encode(section)
             if len(section_tokens) > self.chunk_size:

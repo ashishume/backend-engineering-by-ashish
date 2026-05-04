@@ -9,6 +9,7 @@ A FastAPI RAG service using OpenRouter for LLM/embedding calls, Qdrant for vecto
 - OpenRouter chat completions and embeddings
 - LlamaIndex session memory keyed by `session_id`
 - RAG answers with source snippets
+- Notion memory agent with isolated Qdrant indexing and LangGraph orchestration
 - General answers when retrieval is unrelated
 - CORS enabled for frontend integration
 - Type-safe request/response validation with Pydantic
@@ -104,6 +105,36 @@ Multipart form field: `file`.
 }
 ```
 
+### Notion Memory Agent
+
+The Notion agent indexes pages shared with your Notion integration into a
+separate Qdrant collection and answers with a LangGraph Retriever, Answerer, and
+Critic workflow.
+
+**POST** `/notion-agent/sync`
+
+Triggers a Notion refresh. Startup sync also runs when
+`NOTION_SYNC_ON_STARTUP=true`; missing Notion credentials are treated as a
+non-fatal skip.
+
+**GET** `/notion-agent/sources`
+
+Lists indexed Notion pages.
+
+**POST** `/notion-agent/chat`
+
+```json
+{
+  "thread_id": "thread-id",
+  "client_id": "browser-client-id",
+  "message": "What did I write about Kafka retries?",
+  "top_k": 6
+}
+```
+
+Notion search returns pages shared with the integration. For reliable indexing,
+share the pages you care about directly with the integration.
+
 ### Threads And Persistent Memory
 
 **POST** `/rag/threads`
@@ -142,6 +173,11 @@ Once the server is running, visit:
 - `EMBEDDING_MODEL`: Default `openai/text-embedding-3-small`
 - `QDRANT_URL`: Default `http://localhost:6333`
 - `QDRANT_COLLECTION`: Default `rag_documents`
+- `NOTION_API_KEY`: Notion integration token
+- `NOTION_VERSION`: Default `2026-03-11`
+- `NOTION_SYNC_ON_STARTUP`: Default `true`
+- `NOTION_QDRANT_COLLECTION`: Default `notion_memory`
+- `NOTION_MAX_PAGES`: Default `100`
 - `MEMORY_TOKEN_LIMIT`: Default `6000`
 - `POSTGRES_HOST`: Default `localhost`
 - `POSTGRES_PORT`: Default `5439`

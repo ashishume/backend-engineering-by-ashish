@@ -5,6 +5,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -128,6 +129,9 @@ function MultiAgentChat() {
           <p className="support-subtitle">
             Intake, Knowledge, Resolution, and Quality agents collaborate on each reply.
           </p>
+          <Link className="notion-back-link" to="/notion-agent-chat">
+            Open Notion memory
+          </Link>
         </div>
 
         <div className="support-documents">

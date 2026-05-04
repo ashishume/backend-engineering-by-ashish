@@ -35,6 +35,16 @@ class Settings:
     qdrant_api_key: str | None = os.getenv("QDRANT_API_KEY") or None
     qdrant_collection: str = os.getenv("QDRANT_COLLECTION", "rag_documents")
 
+    notion_api_key: str = os.getenv("NOTION_API_KEY", "")
+    notion_version: str = os.getenv("NOTION_VERSION", "2026-03-11")
+    notion_sync_on_startup: bool = (
+        os.getenv("NOTION_SYNC_ON_STARTUP", "true").lower() == "true"
+    )
+    notion_qdrant_collection: str = os.getenv(
+        "NOTION_QDRANT_COLLECTION", "notion_memory"
+    )
+    notion_max_pages: int = int(os.getenv("NOTION_MAX_PAGES", "100"))
+
     postgres_user: str = os.getenv("POSTGRES_USER", "postgres")
     postgres_password: str = os.getenv("POSTGRES_PASSWORD", "admin")
     postgres_db: str = os.getenv("POSTGRES_DB", "ai_agent")
