@@ -1,2 +1,4 @@
 .obsidian
 .env
+
+**/__pycache__/
