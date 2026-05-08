@@ -1,0 +1,302 @@
+[
+    {
+      "id": 1,
+      "name": "Atomic Habits",
+      "author": "James Clear",
+      "description": "A practical guide to building good habits and breaking bad ones."
+    },
+    {
+      "id": 2,
+      "name": "Deep Work",
+      "author": "Cal Newport",
+      "description": "Strategies for focused success in a distracted world."
+    },
+    {
+      "id": 3,
+      "name": "The Pragmatic Programmer",
+      "author": "Andrew Hunt",
+      "description": "Classic software engineering best practices."
+    },
+    {
+      "id": 4,
+      "name": "Clean Code",
+      "author": "Robert C. Martin",
+      "description": "A handbook of agile software craftsmanship."
+    },
+    {
+      "id": 5,
+      "name": "The Psychology of Money",
+      "author": "Morgan Housel",
+      "description": "Timeless lessons on wealth, greed, and happiness."
+    },
+    {
+      "id": 6,
+      "name": "Rich Dad Poor Dad",
+      "author": "Robert Kiyosaki",
+      "description": "Financial education and investing principles."
+    },
+    {
+      "id": 7,
+      "name": "1984",
+      "author": "George Orwell",
+      "description": "A dystopian novel about surveillance and control."
+    },
+    {
+      "id": 8,
+      "name": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "description": "A novel about justice and racial inequality."
+    },
+    {
+      "id": 9,
+      "name": "The Alchemist",
+      "author": "Paulo Coelho",
+      "description": "A philosophical story about pursuing dreams."
+    },
+    {
+      "id": 10,
+      "name": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "description": "Fantasy adventure before the Lord of the Rings."
+    },
+    {
+      "id": 11,
+      "name": "Harry Potter and the Sorcerer's Stone",
+      "author": "J.K. Rowling",
+      "description": "The beginning of Harry Potter's magical journey."
+    },
+    {
+      "id": 12,
+      "name": "The Lord of the Rings",
+      "author": "J.R.R. Tolkien",
+      "description": "Epic fantasy trilogy about the One Ring."
+    },
+    {
+      "id": 13,
+      "name": "Think and Grow Rich",
+      "author": "Napoleon Hill",
+      "description": "Success principles from wealthy individuals."
+    },
+    {
+      "id": 14,
+      "name": "Sapiens",
+      "author": "Yuval Noah Harari",
+      "description": "A brief history of humankind."
+    },
+    {
+      "id": 15,
+      "name": "Homo Deus",
+      "author": "Yuval Noah Harari",
+      "description": "Exploration of humanity's future."
+    },
+    {
+      "id": 16,
+      "name": "The Lean Startup",
+      "author": "Eric Ries",
+      "description": "Startup methodology focused on rapid experimentation."
+    },
+    {
+      "id": 17,
+      "name": "Zero to One",
+      "author": "Peter Thiel",
+      "description": "Building innovative startups and businesses."
+    },
+    {
+      "id": 18,
+      "name": "The 7 Habits of Highly Effective People",
+      "author": "Stephen Covey",
+      "description": "Personal development and leadership habits."
+    },
+    {
+      "id": 19,
+      "name": "Can't Hurt Me",
+      "author": "David Goggins",
+      "description": "Mental toughness and self-discipline lessons."
+    },
+    {
+      "id": 20,
+      "name": "Ikigai",
+      "author": "Hector Garcia",
+      "description": "Japanese philosophy for a meaningful life."
+    },
+    {
+      "id": 21,
+      "name": "The Power of Now",
+      "author": "Eckhart Tolle",
+      "description": "Guide to mindfulness and living in the present."
+    },
+    {
+      "id": 22,
+      "name": "The Subtle Art of Not Giving a F*ck",
+      "author": "Mark Manson",
+      "description": "Counterintuitive approach to living a good life."
+    },
+    {
+      "id": 23,
+      "name": "The Monk Who Sold His Ferrari",
+      "author": "Robin Sharma",
+      "description": "Lessons on balance and personal fulfillment."
+    },
+    {
+      "id": 24,
+      "name": "Start With Why",
+      "author": "Simon Sinek",
+      "description": "Leadership inspired by purpose."
+    },
+    {
+      "id": 25,
+      "name": "Hooked",
+      "author": "Nir Eyal",
+      "description": "Building habit-forming products."
+    },
+    {
+      "id": 26,
+      "name": "Design Patterns",
+      "author": "Erich Gamma",
+      "description": "Reusable object-oriented software solutions."
+    },
+    {
+      "id": 27,
+      "name": "Refactoring",
+      "author": "Martin Fowler",
+      "description": "Improving code structure without changing behavior."
+    },
+    {
+      "id": 28,
+      "name": "Cracking the Coding Interview",
+      "author": "Gayle Laakmann McDowell",
+      "description": "Programming interview preparation guide."
+    },
+    {
+      "id": 29,
+      "name": "Eloquent JavaScript",
+      "author": "Marijn Haverbeke",
+      "description": "Modern introduction to JavaScript programming."
+    },
+    {
+      "id": 30,
+      "name": "Python Crash Course",
+      "author": "Eric Matthes",
+      "description": "Hands-on introduction to Python."
+    },
+    {
+      "id": 31,
+      "name": "The Clean Coder",
+      "author": "Robert C. Martin",
+      "description": "Professionalism in software development."
+    },
+    {
+      "id": 32,
+      "name": "You Don't Know JS",
+      "author": "Kyle Simpson",
+      "description": "Deep dive into JavaScript concepts."
+    },
+    {
+      "id": 33,
+      "name": "Introduction to Algorithms",
+      "author": "Thomas H. Cormen",
+      "description": "Comprehensive algorithms reference."
+    },
+    {
+      "id": 34,
+      "name": "Grokking Algorithms",
+      "author": "Aditya Bhargava",
+      "description": "Visual and beginner-friendly algorithms guide."
+    },
+    {
+      "id": 35,
+      "name": "The Mythical Man-Month",
+      "author": "Frederick P. Brooks Jr.",
+      "description": "Essays on software project management."
+    },
+    {
+      "id": 36,
+      "name": "The Phoenix Project",
+      "author": "Gene Kim",
+      "description": "DevOps and IT management novel."
+    },
+    {
+      "id": 37,
+      "name": "Thinking, Fast and Slow",
+      "author": "Daniel Kahneman",
+      "description": "Human decision-making and psychology."
+    },
+    {
+      "id": 38,
+      "name": "The Intelligent Investor",
+      "author": "Benjamin Graham",
+      "description": "Classic value investing principles."
+    },
+    {
+      "id": 39,
+      "name": "Dune",
+      "author": "Frank Herbert",
+      "description": "Epic science fiction saga."
+    },
+    {
+      "id": 40,
+      "name": "The Catcher in the Rye",
+      "author": "J.D. Salinger",
+      "description": "Coming-of-age story of teenage alienation."
+    },
+    {
+      "id": 41,
+      "name": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "description": "Classic romance and social commentary."
+    },
+    {
+      "id": 42,
+      "name": "Moby Dick",
+      "author": "Herman Melville",
+      "description": "A sailor's obsession with a white whale."
+    },
+    {
+      "id": 43,
+      "name": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "description": "American dream and tragedy in the 1920s."
+    },
+    {
+      "id": 44,
+      "name": "War and Peace",
+      "author": "Leo Tolstoy",
+      "description": "Historical novel set during the Napoleonic Wars."
+    },
+    {
+      "id": 45,
+      "name": "Crime and Punishment",
+      "author": "Fyodor Dostoevsky",
+      "description": "Psychological drama of guilt and redemption."
+    },
+    {
+      "id": 46,
+      "name": "Meditations",
+      "author": "Marcus Aurelius",
+      "description": "Stoic philosophy reflections."
+    },
+    {
+      "id": 47,
+      "name": "The Art of War",
+      "author": "Sun Tzu",
+      "description": "Ancient Chinese military strategy guide."
+    },
+    {
+      "id": 48,
+      "name": "Steve Jobs",
+      "author": "Walter Isaacson",
+      "description": "Biography of Apple's co-founder."
+    },
+    {
+      "id": 49,
+      "name": "Educated",
+      "author": "Tara Westover",
+      "description": "Memoir about education and self-discovery."
+    },
+    {
+      "id": 50,
+      "name": "Becoming",
+      "author": "Michelle Obama",
+      "description": "Memoir of the former First Lady."
+    }
+  ]

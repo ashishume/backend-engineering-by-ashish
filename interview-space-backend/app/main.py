@@ -7,7 +7,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import init_db
-from app.models import user  # noqa: F401
+
+from app import models
 
 logger = logging.getLogger(__name__)
 
