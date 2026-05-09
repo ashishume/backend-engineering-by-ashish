@@ -134,7 +134,9 @@ async def update_book(
     book_id: int, request: UpdateBook, db: AsyncSession = Depends(get_db)
 ) -> BooksResponse:
     try:
-        book = await db.execute(select(BooksModel).where(BooksModel.id == book_id))
+        book = await db.execute(
+            select(BooksModel).where(BooksModel.id == book_id).with_for_update()
+        )
         result = book.scalar_one_or_none()
 
         if result is None:
