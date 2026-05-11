@@ -33,14 +33,14 @@ collection = chroma_client.get_or_create_collection("documents")
 CHAT_MODEL = os.getenv("OPENROUTER_CHAT_MODEL", "openai/gpt-4o-mini")
 
 EMBEDDING_MODEL = "openai/text-embedding-3-small"
-# semantic: split where consecutive sentences are dissimilar in embedding space
+# semantic: split where consecutive semantic units are dissimilar in embedding space
 # recursive: fixed-size RecursiveCharacterTextSplitter (no extra embed calls on upload)
 DOCUMENT_CHUNKING_STRATEGY = os.getenv("DOCUMENT_CHUNKING_STRATEGY", "semantic").lower()
-# Below this cosine similarity between adjacent sentences, start a new chunk (tune 0.35–0.65).
+# Below this cosine similarity between adjacent semantic units, start a new chunk (tune 0.35–0.65).
 DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD = float(
     os.getenv("DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD", "0.5")
 )
-# Cap sentence-level embedding calls; beyond this, fall back to recursive splitting.
+# Cap semantic-unit embedding calls; beyond this, fall back to recursive splitting.
 _DOCUMENT_SEMANTIC_MAX_SENTENCES = int(
     os.getenv("DOCUMENT_SEMANTIC_MAX_SENTENCES", "800")
 )
@@ -87,8 +87,57 @@ def _split_into_sentences(text: str) -> list[str]:
     if not text:
         return []
     parts = re.split(r"(?<=[.!?。！？])\s+", text)
-    print(parts)
     return [p.strip() for p in parts if p.strip()]
+
+
+def _split_long_sentence(sentence: str) -> list[str]:
+    """Split a long sentence into smaller clause-like semantic units."""
+
+    if len(sentence) <= _CHUNK_SIZE:
+        return [sentence]
+
+    fragments = [
+        fragment.strip()
+        for fragment in re.split(
+            r"(?<=[;:])\s+|(?<=,)\s+|\s+(?=(?:and|but|or|because|while|whereas|however|therefore|moreover|although|though|which|that|when|where)\b)",
+            sentence,
+            flags=re.IGNORECASE,
+        )
+        if fragment.strip()
+    ]
+    if len(fragments) == 1:
+        return _recursive_split(sentence)
+
+    units: list[str] = []
+    current = ""
+    for fragment in fragments:
+        if len(fragment) > _CHUNK_SIZE:
+            if current:
+                units.append(current)
+                current = ""
+            units.extend(_recursive_split(fragment))
+            continue
+
+        candidate = f"{current} {fragment}".strip() if current else fragment
+        if len(candidate) > _CHUNK_SIZE:
+            if current:
+                units.append(current)
+            current = fragment
+        else:
+            current = candidate
+
+    if current:
+        units.append(current)
+    return units
+
+
+def _split_into_semantic_units(text: str) -> list[str]:
+    """Split text into sentences, then split oversized sentences into clauses."""
+
+    units: list[str] = []
+    for sentence in _split_into_sentences(text):
+        units.extend(_split_long_sentence(sentence))
+    return units
 
 
 def _recursive_split(text: str) -> list[str]:
@@ -99,37 +148,86 @@ def _recursive_split(text: str) -> list[str]:
     return splitter.split_text(text)
 
 
-def semantic_split_docs(text: str) -> list[str]:
-    """Chunk by embedding similarity between adjacent sentences (topic / boundary aware)."""
-    sentences = _split_into_sentences(text)
-    if not sentences:
+def _average_embedding(embeddings: list[list[float]]) -> list[float]:
+    if not embeddings:
         return []
-    if len(sentences) == 1:
-        return (
-            _recursive_split(sentences[0])
-            if len(sentences[0]) > _CHUNK_SIZE
-            else sentences
+
+    size = len(embeddings[0])
+    return [
+        sum(embedding[index] for embedding in embeddings) / len(embeddings)
+        for index in range(size)
+    ]
+
+
+def _overlap_tail(units: list[str]) -> list[str]:
+    if _CHUNK_OVERLAP <= 0:
+        return []
+
+    tail: list[str] = []
+    total = 0
+    for unit in reversed(units):
+        next_total = total + len(unit) + (1 if tail else 0)
+        if tail and next_total > _CHUNK_OVERLAP:
+            break
+        tail.insert(0, unit)
+        total = next_total
+    return tail
+
+
+def semantic_split_docs(text: str) -> list[str]:
+    """Chunk by embedding similarity between adjacent semantic units."""
+    units = _split_into_semantic_units(text)
+    if not units:
+        return []
+
+    if len(units) > _DOCUMENT_SEMANTIC_MAX_SENTENCES:
+        return _recursive_split(text)
+
+    embeddings = get_embeddings_batch(units)
+    if len(embeddings) != len(units):
+        return _recursive_split(text)
+
+    chunks: list[str] = []
+    current_units = [units[0]]
+    current_embeddings = [embeddings[0]]
+    thr = DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD
+
+    for index in range(1, len(units)):
+        unit = units[index]
+        embedding = embeddings[index]
+        candidate = " ".join([*current_units, unit])
+        adjacent_similarity = _cosine_similarity(embeddings[index - 1], embedding)
+        centroid_similarity = _cosine_similarity(
+            _average_embedding(current_embeddings), embedding
+        )
+        starts_new_topic = (
+            adjacent_similarity < thr
+            and centroid_similarity < thr
+            and len(current_units) > 0
         )
 
-    if len(sentences) > _DOCUMENT_SEMANTIC_MAX_SENTENCES:
-        return _recursive_split(text)
+        exceeds_chunk_size = len(candidate) > _CHUNK_SIZE
 
-    embeddings = get_embeddings_batch(sentences)
-    if len(embeddings) != len(sentences):
-        return _recursive_split(text)
+        if starts_new_topic or exceeds_chunk_size:
+            chunks.append(" ".join(current_units))
+            overlap_units = [] if starts_new_topic else _overlap_tail(current_units)
+            current_units = [*overlap_units, unit]
+            current_embeddings = [
+                *embeddings[index - len(overlap_units) : index],
+                embedding,
+            ]
+            if len(" ".join(current_units)) > _CHUNK_SIZE:
+                current_units = [unit]
+                current_embeddings = [embedding]
+        else:
+            current_units.append(unit)
+            current_embeddings.append(embedding)
 
-    spans: list[tuple[int, int]] = []
-    start = 0
-    thr = DOCUMENT_SEMANTIC_SIMILARITY_THRESHOLD
-    for i in range(len(sentences) - 1):
-        if _cosine_similarity(embeddings[i], embeddings[i + 1]) < thr:
-            spans.append((start, i + 1))
-            start = i + 1
-    spans.append((start, len(sentences)))
+    if current_units:
+        chunks.append(" ".join(current_units))
 
-    merged = [" ".join(sentences[s:e]) for s, e in spans]
     final: list[str] = []
-    for chunk in merged:
+    for chunk in chunks:
         if len(chunk) > _CHUNK_SIZE:
             final.extend(_recursive_split(chunk))
         else:
