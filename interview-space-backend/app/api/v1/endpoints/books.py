@@ -1,49 +1,44 @@
 from http import HTTPStatus
 import json
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, Header
 from app.core.database import get_db
-from app.models.books import Books as BooksModel
+from app.models.books import (
+    Books as BooksModel,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from app.schemas.books import (
+    BooksCreate,
+    BooksResponse,
+    PasswordChecker,
+    UpdateBook,
+    MessageResponse,
+)
 
 
 router = APIRouter()
 
 
-class BooksCreate(BaseModel):
-    name: str
-    author: str
-    description: str
-
-
-class BooksResponse(BaseModel):
-    model_config = {"from_attributes": True}
-
-    id: int
-    name: str
-    author: str
-    description: str
-
-
-class UpdateBook(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    author: Optional[str] = None
-
-
-class MessageResponse(BaseModel):
-    message: str
+idempotency_store = {}
 
 
 @router.post("/", response_model=BooksResponse, status_code=HTTPStatus.CREATED)
 async def create_books(
-    request: BooksCreate, db: AsyncSession = Depends(get_db)
+    request: BooksCreate,
+    idempotency_key: Optional[str] = Header(None, alias="idempotency-key"),
+    db: AsyncSession = Depends(get_db),
 ) -> BooksResponse:
     try:
+        if idempotency_key:
+            if idempotency_key in idempotency_store:
+                raise HTTPException(
+                    detail="Same book already added", status_code=HTTPStatus.CONFLICT
+                )
+
+            idempotency_store[idempotency_key] = True
         result = await db.execute(
             select(BooksModel).where(BooksModel.name == request.name)
         )
