@@ -1,6 +1,8 @@
 from http import HTTPStatus
 import json
-from typing import Any, Optional
+from typing import Optional
+from app.core.redis import get_redis
+from redis.asyncio import Redis
 
 from fastapi import APIRouter, Depends, Query, HTTPException, Header
 from app.core.database import get_db
@@ -20,7 +22,6 @@ from app.schemas.books import (
 
 
 router = APIRouter()
-
 
 idempotency_store = {}
 
@@ -94,6 +95,31 @@ async def fetch_books(db: AsyncSession = Depends(get_db)) -> list[BooksResponse]
             detail="Unexpected error while fetching books",
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         ) from exc
+
+
+@router.get("/{book_id:int}", response_model=BooksResponse)
+async def find_books(
+    book_id: int,
+    db: AsyncSession = Depends(get_db),
+    redis_client: Redis = Depends(get_redis),
+) -> BooksResponse:
+    key = f"book_{book_id}"
+    value = await redis_client.get(key)
+
+    if value:
+        return BooksResponse.model_validate(json.loads(value))
+
+    res = await db.execute(select(BooksModel).where(BooksModel.id == book_id))
+    book = res.scalar_one_or_none()
+    if book is None:
+        raise HTTPException(
+            detail="Book not found",
+            status_code=HTTPStatus.NOT_FOUND,
+        )
+
+    response = BooksResponse.model_validate(book)
+    await redis_client.set(key, response.model_dump_json(), ex=3600)
+    return response
 
 
 @router.get(

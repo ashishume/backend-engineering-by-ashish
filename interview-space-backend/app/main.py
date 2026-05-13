@@ -3,10 +3,12 @@ import logging
 
 from fastapi import FastAPI
 from sqlalchemy.exc import SQLAlchemyError
+from redis.exceptions import RedisError
 
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.redis import close_redis, init_redis
 
 from app import models
 
@@ -19,7 +21,16 @@ async def lifespan(_: FastAPI):
         await init_db()
     except (SQLAlchemyError, OSError) as exc:
         logger.warning("Database initialization skipped: %s", exc)
-    yield
+
+    try:
+        await init_redis()
+    except (RedisError, OSError) as exc:
+        logger.warning("Redis initialization skipped: %s", exc)
+
+    try:
+        yield
+    finally:
+        await close_redis()
 
 
 app = FastAPI(
